@@ -1,0 +1,47 @@
+﻿@model WebApplication1.Models.User
+
+<div class="signup-wrapper">
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+        <div class="card glass-card shadow-2xl">
+            <div class="card-body p-5">
+                <div class="text-center mb-5">
+                    <div class="brand-logo mb-3">
+                        <i class="bi bi-person-plus-fill"></i>
+                    </div>
+                    <h2 class="fw-black text-white">Create Account</h2>
+                    <p class="text-light-50">Join thousands of users today.</p>
+                </div>
+
+                <form asp-action="Signup" method="post">
+                    <div class="form-floating mb-3">
+                        <input asp-for="Name" class="form-control custom-input" placeholder="Name" />
+                        <label asp-for="Name">Full Name</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Email" class="form-control custom-input" placeholder="Email" />
+                        <label asp-for="Email">Email Address</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Phone" class="form-control custom-input" placeholder="Phone" />
+                        <label asp-for="Phone">Phone Number</label>
+                    </div>
+
+                    <div class="form-floating mb-4">
+                        <input asp-for="Password" type="password" class="form-control custom-input" placeholder="Password" />
+                        <label asp-for="Password">Password</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-gradient w-100 py-3 fw-bold text-uppercase tracking-wider">
+                        Get Started
+                    </button>
+                </form>
+
+                <div class="text-center mt-4">
+                    <p class="text-white-50">Already a member? <a asp-action="Login" class="text-white fw-bold text-decoration-none border-bottom">Login</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

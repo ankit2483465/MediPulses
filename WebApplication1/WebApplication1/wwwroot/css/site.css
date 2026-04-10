@@ -1,0 +1,154 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+  color: var(--bs-secondary-color);
+  text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}
+
+
+
+/* Background with an animated gradient */
+/* Reuse the same background animation from the Signup page */
+.login-wrapper, .signup-wrapper {
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Glass Effect Card */
+.glass-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 420px;
+}
+
+/* Inputs */
+.custom-input {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    border-radius: 12px !important;
+}
+
+    .custom-input:focus {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border-color: rgba(255, 255, 255, 0.5) !important;
+        box-shadow: none;
+    }
+
+/* Floating label color fix */
+.form-floating > label {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    color: #fff;
+}
+
+/* Submit Button */
+.btn-gradient {
+    background: #ffffff;
+    color: #e73c7e;
+    border: none;
+    border-radius: 12px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        color: #d63384;
+    }
+
+/* Icon */
+.brand-logo {
+    font-size: 3.5rem;
+    color: white;
+}
+
+
+
+/* Glass Navbar */
+.glass-nav {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    position: fixed; /* Keeps nav at top while scrolling */
+    width: 100%;
+    z-index: 1000;
+}
+
+/* Hover effect for links */
+.hover-link {
+    transition: color 0.3s ease;
+}
+
+    .hover-link:hover {
+        color: white !important;
+    }
+
+/* Glass Footer */
+.glass-footer {
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    width: 100%;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: -50px; /* Pulls footer up over the background */
+    position: relative;
+}
+
+/* Adjust Main to prevent content hiding under fixed nav */
+main {
+    min-height: 100vh;
+}
+
+/* Branding Icon Color */
+.navbar-brand i {
+    background: -webkit-linear-gradient(#fff, #ffccd5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}

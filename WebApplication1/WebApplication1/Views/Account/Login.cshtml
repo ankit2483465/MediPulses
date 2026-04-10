@@ -1,0 +1,50 @@
+﻿<div class="login-wrapper">
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+        <div class="card glass-card shadow-2xl">
+            <div class="card-body p-5">
+                <div class="text-center mb-5">
+                    <div class="brand-logo mb-3">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <h2 class="fw-black text-white">Welcome Back</h2>
+                    <p class="text-light-50">Please enter your details to sign in.</p>
+                </div>
+
+                <form asp-action="Login" method="post">
+                    <div class="form-floating mb-3">
+                        <input name="email" type="email" class="form-control custom-input" id="emailInput" placeholder="Email" required />
+                        <label for="emailInput">Email Address</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input name="password" type="password" class="form-control custom-input" id="passwordInput" placeholder="Password" required />
+                        <label for="passwordInput">Password</label>
+                    </div>
+
+                    @if (ViewBag.Message != null)
+                    {
+                        <div class="alert alert-danger bg-danger border-0 text-white py-2 small mb-4" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i> @ViewBag.Message
+                        </div>
+                    }
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="rememberMe">
+                            <label class="form-check-label text-white-50 small" for="rememberMe">Remember me</label>
+                        </div>
+                        <a href="#" class="text-white-50 small text-decoration-none">Forgot Password?</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-gradient w-100 py-3 fw-bold text-uppercase tracking-wider">
+                        Login
+                    </button>
+                </form>
+
+                <div class="text-center mt-4">
+                    <p class="text-white-50">New user? <a asp-action="Signup" class="text-white fw-bold text-decoration-none border-bottom">Register here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

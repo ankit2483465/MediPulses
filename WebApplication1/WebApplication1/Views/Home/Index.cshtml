@@ -1,0 +1,33 @@
+﻿@model IEnumerable<WebApplication1.Models.User>
+
+<h1>Welcome, @ViewBag.Name!</h1>
+<p>You have successfully logged into the system.</p>
+<a href="/Account/Logout" class="btn btn-danger">Logout</a>
+
+
+<h2>Registered Users</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Phone</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Name</td>
+                <td>@user.Email</td>
+                <td>
+                    @* Check if Role is null before displaying *@
+                    @(string.IsNullOrEmpty(user.Role) ? "No Role Assigned" : user.Role)
+                </td>
+                <td>@user.Phone</td>
+            </tr>
+        }
+    </tbody>
+</table>
