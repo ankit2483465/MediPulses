@@ -1,0 +1,35 @@
+## Visual Studio temporary files and user settings
+.vs/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.sln.docstates
+
+## Build output and temporary artifacts
+[Bb]in/
+[Oo]bj/
+Generated\ Files/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+
+## Web development artifacts
+node_modules/
+.env
+.env.*
+dist/
+
+## Database and log files
+*.log
+*.db
+*.sqlite
+*.mdf
+*.ldf
+
+## Operating System files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
