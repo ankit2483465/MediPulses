@@ -61,7 +61,6 @@ wwwroot\lib\jquery\dist\jquery.slim.js
 wwwroot\lib\jquery\dist\jquery.slim.min.js
 wwwroot\lib\jquery\dist\jquery.slim.min.map
 wwwroot\lib\jquery\LICENSE.txt
-C:\Users\2483465\OneDrive - Cognizant\Desktop\New folder (2)\MediPulses\WebApplication1\WebApplication1\wwwroot\lib\jquery\LICENSE.txt
 C:\Users\2483465\OneDrive - Cognizant\Desktop\New folder (2)\MediPulses\WebApplication1\WebApplication1\wwwroot\css\site.css
 C:\Users\2483465\OneDrive - Cognizant\Desktop\New folder (2)\MediPulses\WebApplication1\WebApplication1\wwwroot\favicon.ico
 C:\Users\2483465\OneDrive - Cognizant\Desktop\New folder (2)\MediPulses\WebApplication1\WebApplication1\wwwroot\js\site.js
@@ -123,3 +122,4 @@ C:\Users\2483465\OneDrive - Cognizant\Desktop\New folder (2)\MediPulses\WebAppli
 C:\Users\2483465\OneDrive - Cognizant\Desktop\New folder (2)\MediPulses\WebApplication1\WebApplication1\wwwroot\lib\jquery\dist\jquery.slim.js
 C:\Users\2483465\OneDrive - Cognizant\Desktop\New folder (2)\MediPulses\WebApplication1\WebApplication1\wwwroot\lib\jquery\dist\jquery.slim.min.js
 C:\Users\2483465\OneDrive - Cognizant\Desktop\New folder (2)\MediPulses\WebApplication1\WebApplication1\wwwroot\lib\jquery\dist\jquery.slim.min.map
+C:\Users\2483465\OneDrive - Cognizant\Desktop\New folder (2)\MediPulses\WebApplication1\WebApplication1\wwwroot\lib\jquery\LICENSE.txt
