@@ -567,4 +567,3 @@ C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\Web
 C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerUI.dll
 C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\obj\Debug\net10.0\WebApplication1.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\obj\Debug\net10.0\compressed\556miamfr6-{0}-7mhrx0gvnq-7mhrx0gvnq.gz
-C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
