@@ -150,5 +150,255 @@ main {
 .navbar-brand i {
     background: -webkit-linear-gradient(#fff, #ffccd5);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
+}
+
+/* ============================================
+   DASHBOARD / CRUD PAGE STYLES
+   ============================================ */
+
+body {
+    background-color: #f0f4f8;
+}
+
+main {
+    padding-top: 64px;
+    min-height: calc(100vh - 60px);
+}
+
+/* ── Page Header ── */
+.page-header {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    color: white;
+    box-shadow: 0 4px 20px rgba(13, 110, 253, 0.25);
+}
+
+.page-header h2 {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.page-header .breadcrumb {
+    --bs-breadcrumb-divider-color: rgba(255,255,255,0.5);
+    --bs-breadcrumb-item-active-color: rgba(255,255,255,0.9);
+    margin-bottom: 0;
+}
+
+.page-header .breadcrumb-item a {
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+}
+
+.page-header .breadcrumb-item + .breadcrumb-item::before {
+    color: rgba(255,255,255,0.4);
+}
+
+/* ── Data Table Card ── */
+.data-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
+    overflow: hidden;
+}
+
+.data-card .card-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e9ecef;
+    padding: 1rem 1.5rem;
+}
+
+.data-card .table {
+    margin-bottom: 0;
+}
+
+.data-card .table thead th {
+    background: #f8f9fa;
+    color: #6c757d;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 2px solid #e9ecef;
+    padding: 0.875rem 1rem;
+}
+
+.data-card .table tbody td {
+    padding: 0.85rem 1rem;
+    vertical-align: middle;
+    color: #344767;
+    border-color: #f2f2f2;
+}
+
+.data-card .table tbody tr:hover {
+    background-color: #f5f8ff;
+}
+
+/* ── Form Card ── */
+.form-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.09);
+}
+
+.form-card .card-header {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    color: white;
+    border-radius: 16px 16px 0 0 !important;
+    padding: 1.25rem 1.5rem;
+    border: none;
+}
+
+.form-card .card-header.edit-header {
+    background: linear-gradient(135deg, #fd7e14 0%, #e35d0c 100%);
+}
+
+.form-card .form-control,
+.form-card .form-select {
+    border-radius: 10px;
+    border: 1.5px solid #e2e8f0;
+    padding: 0.6rem 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    color: #344767;
+}
+
+.form-card .form-control:focus,
+.form-card .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12);
+}
+
+.form-card .form-label {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #344767;
+    margin-bottom: 0.4rem;
+}
+
+/* ── Detail Card ── */
+.detail-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.09);
+    overflow: hidden;
+}
+
+.detail-card .card-header {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    color: white;
+    padding: 1.4rem 1.75rem;
+}
+
+.detail-row {
+    padding: 0.9rem 1.75rem;
+    border-bottom: 1px solid #f2f2f2;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #8a94a6;
+    min-width: 150px;
+}
+
+.detail-value {
+    font-weight: 500;
+    color: #344767;
+}
+
+/* ── Delete Confirmation Card ── */
+.delete-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 2px solid #f8d7da;
+    box-shadow: 0 4px 24px rgba(220, 53, 69, 0.1);
+    overflow: hidden;
+}
+
+.delete-card .card-header {
+    background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+    color: white;
+    padding: 1.25rem 1.5rem;
+}
+
+/* ── Badges ── */
+.badge-status {
+    padding: 0.4em 0.85em;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+/* ── Search Box ── */
+.search-box {
+    border-radius: 10px;
+    border: 1.5px solid #e2e8f0;
+    padding: 0.5rem 1rem 0.5rem 2.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 0.75rem center;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-size: 0.875rem;
+}
+
+.search-box:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12);
+    outline: none;
+}
+
+/* ── Avatar Icon ── */
+.avatar-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* ── Dropdown menu refinement ── */
+.dropdown-menu-dark {
+    background-color: #1e293b;
+    border-radius: 12px;
+}
+
+.dropdown-menu-dark .dropdown-item {
+    border-radius: 8px;
+    margin: 2px 6px;
+    width: calc(100% - 12px);
+    font-size: 0.875rem;
+    transition: background 0.2s;
+}
+
+.dropdown-menu-dark .dropdown-item:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+
+/* ── Empty state ── */
+.empty-state {
+    padding: 3rem 1rem;
+    text-align: center;
+    color: #8a94a6;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 1rem;
+    opacity: 0.4;
 }

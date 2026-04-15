@@ -19,49 +19,109 @@ build_property.TargetFrameworkIdentifier = .NETCoreApp
 build_property.TargetFrameworkVersion = v10.0
 build_property.RootNamespace = WebApplication1
 build_property.RootNamespace = WebApplication1
-build_property.ProjectDir = C:\Users\2483465\OneDrive - Cognizant\Desktop\MediPulse\WebApplication1\WebApplication1\
+build_property.ProjectDir = C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 9.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = C:\Users\2483465\OneDrive - Cognizant\Desktop\MediPulse\WebApplication1\WebApplication1
+build_property.MSBuildProjectDirectory = C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 10.0
 build_property.EnableCodeStyleSeverity = 
 
-[C:/Users/2483465/OneDrive - Cognizant/Desktop/MediPulse/WebApplication1/WebApplication1/Views/Account/Login.cshtml]
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/Account/Login.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/2483465/OneDrive - Cognizant/Desktop/MediPulse/WebApplication1/WebApplication1/Views/Account/Signup.cshtml]
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/Account/Signup.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxTaWdudXAuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/2483465/OneDrive - Cognizant/Desktop/MediPulse/WebApplication1/WebApplication1/Views/Home/Index.cshtml]
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/Facilities/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRmFjaWxpdGllc1xDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/Facilities/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRmFjaWxpdGllc1xEZWxldGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/Facilities/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRmFjaWxpdGllc1xEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/Facilities/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRmFjaWxpdGllc1xFZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/Facilities/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRmFjaWxpdGllc1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/2483465/OneDrive - Cognizant/Desktop/MediPulse/WebApplication1/WebApplication1/Views/Home/Privacy.cshtml]
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/2483465/OneDrive - Cognizant/Desktop/MediPulse/WebApplication1/WebApplication1/Views/Shared/Error.cshtml]
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/2483465/OneDrive - Cognizant/Desktop/MediPulse/WebApplication1/WebApplication1/Views/Shared/_ValidationScriptsPartial.cshtml]
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/2483465/OneDrive - Cognizant/Desktop/MediPulse/WebApplication1/WebApplication1/Views/_ViewImports.cshtml]
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/StorageZones/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3RvcmFnZVpvbmVzXENyZWF0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/StorageZones/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3RvcmFnZVpvbmVzXERlbGV0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/StorageZones/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3RvcmFnZVpvbmVzXERldGFpbHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/StorageZones/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3RvcmFnZVpvbmVzXEVkaXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/StorageZones/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3RvcmFnZVpvbmVzXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/Supplier/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwcGxpZXJcQ3JlYXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/Supplier/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwcGxpZXJcRGVsZXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/Supplier/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwcGxpZXJcRGV0YWlscy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/Supplier/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwcGxpZXJcRWRpdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/Supplier/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwcGxpZXJcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/2483465/OneDrive - Cognizant/Desktop/MediPulse/WebApplication1/WebApplication1/Views/_ViewStart.cshtml]
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/2483465/OneDrive - Cognizant/Desktop/MediPulse/WebApplication1/WebApplication1/Views/Shared/_Layout.cshtml]
+[C:/Users/2483483/OneDrive - Cognizant/Desktop/Medipulse-Main/WebApplication1/WebApplication1/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-bddmc6yalx

@@ -1,0 +1,155 @@
+@model IEnumerable<WebApplication1.Models.Facility>
+
+@{
+    ViewData["Title"] = "Facilities";
+}
+
+<div class="container-fluid py-4 px-4">
+
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h2 class="mb-1"><i class="bi bi-hospital me-2"></i>Facilities</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Facilities</li>
+                    </ol>
+                </nav>
+            </div>
+            <a asp-action="Create" class="btn btn-light fw-semibold px-4 shadow-sm">
+                <i class="bi bi-plus-lg me-1"></i>Add Facility
+            </a>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4 shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["SuccessUpdate"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show rounded-3 mb-4 shadow-sm" role="alert">
+            <i class="bi bi-pencil-fill me-2"></i>@TempData["SuccessUpdate"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["SuccessDelete"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show rounded-3 mb-4 shadow-sm" role="alert">
+            <i class="bi bi-trash-fill me-2"></i>@TempData["SuccessDelete"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Table Card -->
+    <div class="data-card">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span class="fw-semibold text-secondary small">
+                <i class="bi bi-list-ul me-1"></i>All Facilities
+                <span class="badge bg-success ms-2">@Model.Count()</span>
+            </span>
+            <input type="text" id="searchInput" class="search-box" placeholder="Search facilities..." style="width:260px;">
+        </div>
+
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table" id="facilitiesTable">
+                    <thead>
+                        <tr>
+                            <th style="width:50px">#</th>
+                            <th>Facility Name</th>
+                            <th>Type</th>
+                            <th>Region</th>
+                            <th class="text-center" style="width:140px">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ int i = 1; }
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="text-muted">@i</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar-icon bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-hospital"></i>
+                                        </div>
+                                        <span class="fw-semibold">@item.Name</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    @{
+                                        var typeClass = item.Type switch {
+                                            "Hospital"  => "bg-danger",
+                                            "Clinic"    => "bg-primary",
+                                            "Warehouse" => "bg-secondary",
+                                            _           => "bg-secondary"
+                                        };
+                                        var typeIcon = item.Type switch {
+                                            "Hospital"  => "bi-hospital",
+                                            "Clinic"    => "bi-clipboard2-pulse",
+                                            "Warehouse" => "bi-building",
+                                            _           => "bi-building"
+                                        };
+                                    }
+                                    <span class="badge @typeClass badge-status">
+                                        <i class="bi @typeIcon me-1"></i>@item.Type
+                                    </span>
+                                </td>
+                                <td>
+                                    <i class="bi bi-geo-alt text-muted me-1"></i>@item.Region
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-1">
+                                        <a asp-action="Details" asp-route-id="@item.FacilityId"
+                                           class="btn btn-sm btn-outline-info" title="View Details">
+                                            <i class="bi bi-eye-fill"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.FacilityId"
+                                           class="btn btn-sm btn-outline-warning" title="Edit">
+                                            <i class="bi bi-pencil-fill"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.FacilityId"
+                                           class="btn btn-sm btn-outline-danger" title="Delete">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            i++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="bi bi-hospital"></i>
+                <p class="fw-semibold mb-1">No facilities found</p>
+                <p class="small mb-3">Get started by adding your first facility.</p>
+                <a asp-action="Create" class="btn btn-success px-4">
+                    <i class="bi bi-plus-lg me-1"></i>Add Facility
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('searchInput').addEventListener('keyup', function () {
+            const filter = this.value.toLowerCase();
+            document.querySelectorAll('#facilitiesTable tbody tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+            });
+        });
+    </script>
+}

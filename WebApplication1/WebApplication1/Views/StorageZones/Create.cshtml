@@ -1,0 +1,79 @@
+@model WebApplication1.Models.StorageZone
+
+@{
+    ViewData["Title"] = "Add Storage Zone";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Storage Zones</a></li>
+                    <li class="breadcrumb-item active">Add New</li>
+                </ol>
+            </nav>
+
+            <div class="form-card">
+                <div class="card-header d-flex align-items-center gap-2"
+                     style="background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);">
+                    <i class="bi bi-boxes fs-5"></i>
+                    <h5 class="mb-0 fw-semibold">Add New Storage Zone</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 rounded-3 small mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="FacilityId" class="form-label">Facility <span class="text-danger">*</span></label>
+                            <select asp-for="FacilityId" class="form-select" asp-items="ViewBag.FacilityId">
+                                <option value="">-- Select Facility --</option>
+                            </select>
+                            <span asp-validation-for="FacilityId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">Zone Name <span class="text-danger">*</span></label>
+                            <input asp-for="Name" class="form-control" placeholder="e.g. Cold Room A" />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="TemperatureProfile" class="form-label">Temperature Profile <span class="text-danger">*</span></label>
+                            <select asp-for="TemperatureProfile" class="form-select">
+                                <option value="">-- Select Profile --</option>
+                                <option value="Ambient">Ambient</option>
+                                <option value="Refrigerated">Refrigerated</option>
+                                <option value="Freezer">Freezer</option>
+                            </select>
+                            <span asp-validation-for="TemperatureProfile" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Capacity" class="form-label">Capacity (units) <span class="text-danger">*</span></label>
+                            <input asp-for="Capacity" class="form-control" placeholder="e.g. 500" type="number" min="0" />
+                            <span asp-validation-for="Capacity" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn px-4 fw-semibold text-white"
+                                    style="background: linear-gradient(135deg, #0dcaf0, #0aa2c0);">
+                                <i class="bi bi-check2 me-1"></i>Create Zone
+                            </button>
+                            <a asp-action="Index" class="btn btn-light px-4">
+                                <i class="bi bi-arrow-left me-1"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
