@@ -1,0 +1,77 @@
+@model WebApplication1.Models.Facility
+
+@{
+    ViewData["Title"] = "Facility Details";
+    var typeClass = Model.Type switch { "Hospital" => "bg-danger", "Clinic" => "bg-primary", "Warehouse" => "bg-secondary", _ => "bg-secondary" };
+    var typeIcon  = Model.Type switch { "Hospital" => "bi-hospital", "Clinic" => "bi-clipboard2-pulse", "Warehouse" => "bi-building", _ => "bi-building" };
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Facilities</a></li>
+                    <li class="breadcrumb-item active">Details</li>
+                </ol>
+            </nav>
+
+            <div class="detail-card">
+                <!-- Card Header -->
+                <div class="card-header d-flex justify-content-between align-items-center"
+                     style="background: linear-gradient(135deg, #198754 0%, #146c43 100%);">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center"
+                             style="width:50px;height:50px;">
+                            <i class="bi @typeIcon fs-4"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0 fw-bold">@Model.Name</h5>
+                            <small class="opacity-75">Facility ID: @Model.FacilityId</small>
+                        </div>
+                    </div>
+                    <span class="badge @typeClass badge-status">
+                        <i class="bi @typeIcon me-1"></i>@Model.Type
+                    </span>
+                </div>
+
+                <!-- Detail Rows -->
+                <div class="card-body p-0">
+                    <div class="detail-row">
+                        <span class="detail-label"><i class="bi bi-hash me-2"></i>Facility ID</span>
+                        <span class="detail-value">@Model.FacilityId</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label"><i class="bi bi-hospital me-2"></i>Name</span>
+                        <span class="detail-value fw-semibold">@Model.Name</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label"><i class="bi bi-tag me-2"></i>Type</span>
+                        <span class="detail-value">
+                            <span class="badge @typeClass badge-status">
+                                <i class="bi @typeIcon me-1"></i>@Model.Type
+                            </span>
+                        </span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label"><i class="bi bi-geo-alt me-2"></i>Region</span>
+                        <span class="detail-value">@Model.Region</span>
+                    </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="card-footer bg-white border-top py-3 px-4 d-flex gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.FacilityId" class="btn btn-warning text-white fw-semibold">
+                        <i class="bi bi-pencil me-1"></i>Edit
+                    </a>
+                    <a asp-action="Index" class="btn btn-light">
+                        <i class="bi bi-arrow-left me-1"></i>Back to List
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

@@ -373,7 +373,6 @@ C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\Web
 C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\obj\Debug\net10.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
 C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\obj\Debug\net10.0\scopedcss\bundle\WebApplication1.styles.css
 C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\obj\Debug\net10.0\scopedcss\projectbundle\WebApplication1.bundle.scp.css
-C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\obj\Debug\net10.0\compressed\556miamfr6-{0}-licbjvdlzk-licbjvdlzk.gz
 C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\obj\Debug\net10.0\compressed\u3m5yo2x8f-{0}-61n19gt1b8-61n19gt1b8.gz
 C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\obj\Debug\net10.0\compressed\w3u7ibosd4-{0}-xtxxf3hu2r-xtxxf3hu2r.gz
 C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\obj\Debug\net10.0\compressed\8yqr3kw3fy-{0}-t1cqhe9u97-t1cqhe9u97.gz
@@ -448,7 +447,6 @@ C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\Web
 C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\obj\Debug\net10.0\WebApplication1.pdb
 C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\obj\Debug\net10.0\WebApplication1.genruntimeconfig.cache
 C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\obj\Debug\net10.0\ref\WebApplication1.dll
-C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
 C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\bin\Debug\net10.0\Microsoft.AspNetCore.Razor.Language.dll
 C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\bin\Debug\net10.0\Microsoft.Build.dll
 C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\bin\Debug\net10.0\Microsoft.CodeAnalysis.CSharp.Features.dll
@@ -563,3 +561,10 @@ C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\Web
 C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\bin\Debug\net10.0\tr\Microsoft.CodeAnalysis.Scripting.resources.dll
 C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\bin\Debug\net10.0\zh-Hans\Microsoft.CodeAnalysis.Scripting.resources.dll
 C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\bin\Debug\net10.0\zh-Hant\Microsoft.CodeAnalysis.Scripting.resources.dll
+C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\bin\Debug\net10.0\Microsoft.OpenApi.dll
+C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\bin\Debug\net10.0\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\obj\Debug\net10.0\WebApplication1.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\obj\Debug\net10.0\compressed\556miamfr6-{0}-7mhrx0gvnq-7mhrx0gvnq.gz
+C:\Users\2483483\OneDrive - Cognizant\Desktop\Medipulse-Main\WebApplication1\WebApplication1\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
