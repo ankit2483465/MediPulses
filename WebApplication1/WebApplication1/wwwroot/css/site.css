@@ -112,46 +112,116 @@ body {
 
 
 
-/* Glass Navbar */
+/* ── Professional Navbar ── */
 .glass-nav {
-    background: rgba(255, 255, 255, 0.05) !important;
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    position: fixed; /* Keeps nav at top while scrolling */
+    background: linear-gradient(135deg, #0a1628 0%, #0d2144 50%, #0f2d5c 100%) !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    position: fixed;
     width: 100%;
     z-index: 1000;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+    min-height: 64px;
 }
 
-/* Hover effect for links */
+.glass-nav .container-fluid {
+    min-height: 64px;
+}
+
+/* Brand icon */
+.navbar-brand i {
+    font-size: 1.35rem;
+    background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 6px rgba(239,68,68,0.4));
+}
+
+/* Brand text */
+.navbar-brand .brand-name {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #ffffff 0%, #93c5fd 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Nav links */
 .hover-link {
-    transition: color 0.3s ease;
+    transition: color 0.2s ease, background-color 0.2s ease;
+    border-radius: 8px;
+    padding: 0.42rem 0.9rem !important;
+    font-size: 0.875rem;
+    font-weight: 500;
 }
 
     .hover-link:hover {
-        color: white !important;
+        color: #fff !important;
+        background-color: rgba(255,255,255,0.09);
     }
 
-/* Glass Footer */
+/* Login button */
+.nav-login {
+    background: linear-gradient(135deg, rgba(37,99,235,0.3) 0%, rgba(29,78,216,0.3) 100%);
+    border: 1px solid rgba(59,130,246,0.5);
+    border-radius: 8px;
+    color: #fff !important;
+    padding: 0.38rem 1.1rem !important;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .nav-login:hover {
+        background: linear-gradient(135deg, rgba(37,99,235,0.55) 0%, rgba(29,78,216,0.55) 100%) !important;
+        border-color: rgba(96,165,250,0.8);
+        box-shadow: 0 0 14px rgba(59,130,246,0.35);
+        color: #fff !important;
+    }
+
+/* Dropdown */
+.dropdown-menu-dark {
+    background: linear-gradient(160deg, #0f1e36 0%, #0d2144 100%);
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+    padding: 0.4rem;
+}
+
+.dropdown-menu-dark .dropdown-item {
+    border-radius: 8px;
+    font-size: 0.875rem;
+    padding: 0.55rem 0.85rem;
+    transition: background 0.15s ease;
+    color: rgba(255,255,255,0.75);
+}
+
+    .dropdown-menu-dark .dropdown-item:hover {
+        background-color: rgba(255,255,255,0.09);
+        color: #fff;
+    }
+
+/* ── Professional Footer ── */
 .glass-footer {
-    background: rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(10px);
+    background: linear-gradient(135deg, #0a1628 0%, #0d2144 50%, #0f2d5c 100%);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     width: 100%;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    margin-top: -50px; /* Pulls footer up over the background */
+    border-top: 1px solid rgba(255,255,255,0.07);
+    margin-top: 0;
     position: relative;
+    padding: 1.1rem 0;
+    font-size: 0.85rem;
+    letter-spacing: 0.01em;
 }
 
 /* Adjust Main to prevent content hiding under fixed nav */
 main {
     min-height: 100vh;
-}
-
-/* Branding Icon Color */
-.navbar-brand i {
-    background: -webkit-linear-gradient(#fff, #ffccd5);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
 }
 
 /* ============================================
