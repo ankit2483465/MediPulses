@@ -1,0 +1,87 @@
+@model WebApplication1.Models.Receipt
+
+@{
+    ViewData["Title"] = "Record Receipt";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Receipts</a></li>
+                    <li class="breadcrumb-item active">Record Receipt</li>
+                </ol>
+            </nav>
+
+            <div class="form-card">
+                <div class="card-header d-flex align-items-center gap-2"
+                     style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
+                    <i class="bi bi-inbox-fill fs-5"></i>
+                    <h5 class="mb-0 fw-semibold">Record New Receipt</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 rounded-3 small mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Poid" class="form-label">Purchase Order <span class="text-danger">*</span></label>
+                            <select asp-for="Poid" class="form-select" asp-items="ViewBag.Poid">
+                                <option value="">-- Select Purchase Order --</option>
+                            </select>
+                            <span asp-validation-for="Poid" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="SupplierLot" class="form-label">Supplier Lot Number</label>
+                            <input asp-for="SupplierLot" class="form-control" placeholder="e.g. LOT-2024-001" />
+                            <span asp-validation-for="SupplierLot" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ReceivedDate" class="form-label">Received Date</label>
+                            <input asp-for="ReceivedDate" class="form-control" type="date" />
+                            <span asp-validation-for="ReceivedDate" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ReceivedBy" class="form-label">Received By</label>
+                            <select asp-for="ReceivedBy" class="form-select" asp-items="ViewBag.ReceivedBy">
+                                <option value="">-- Select User --</option>
+                            </select>
+                            <span asp-validation-for="ReceivedBy" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="QualityStatus" class="form-label">Quality Status <span class="text-danger">*</span></label>
+                            <select asp-for="QualityStatus" class="form-select">
+                                <option value="">-- Select Quality Status --</option>
+                                <option value="Accepted">Accepted</option>
+                                <option value="Rejected">Rejected</option>
+                                <option value="On Hold">On Hold</option>
+                                <option value="Pending">Pending</option>
+                            </select>
+                            <span asp-validation-for="QualityStatus" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                                <i class="bi bi-check2 me-1"></i>Save Receipt
+                            </button>
+                            <a asp-action="Index" class="btn btn-light px-4">
+                                <i class="bi bi-arrow-left me-1"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

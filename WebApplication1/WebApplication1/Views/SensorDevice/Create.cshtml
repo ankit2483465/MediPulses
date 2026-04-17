@@ -1,0 +1,83 @@
+@model WebApplication1.Models.SensorDevice
+
+@{
+    ViewData["Title"] = "Add Sensor Device";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Sensor Devices</a></li>
+                    <li class="breadcrumb-item active">Add New</li>
+                </ol>
+            </nav>
+
+            <div class="form-card">
+                <div class="card-header d-flex align-items-center gap-2"
+                     style="background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);">
+                    <i class="bi bi-cpu fs-5"></i>
+                    <h5 class="mb-0 fw-semibold">Add New Sensor Device</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 rounded-3 small mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="DeviceType" class="form-label fw-semibold">
+                                <i class="bi bi-cpu me-1 text-info"></i>Device Type <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="DeviceType" class="form-select">
+                                <option value="">-- Select Device Type --</option>
+                                <option value="Temp">Temp</option>
+                                <option value="Humidity">Humidity</option>
+                                <option value="GPS">GPS</option>
+                            </select>
+                            <span asp-validation-for="DeviceType" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="AssignedTo" class="form-label fw-semibold">
+                                <i class="bi bi-box-seam me-1 text-info"></i>Assigned To
+                            </label>
+                            <input asp-for="AssignedTo" class="form-control"
+                                   placeholder="e.g. Shipment #123 or Cold Zone A" />
+                            <span asp-validation-for="AssignedTo" class="text-danger small"></span>
+                            <div class="form-text">Enter a shipment reference or storage zone name.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Status" class="form-label fw-semibold">
+                                <i class="bi bi-activity me-1 text-info"></i>Status <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="Status" class="form-select">
+                                <option value="">-- Select Status --</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="Maintenance">Maintenance</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-info text-white px-4 fw-semibold">
+                                <i class="bi bi-check2 me-1"></i>Create Device
+                            </button>
+                            <a asp-action="Index" class="btn btn-light px-4">
+                                <i class="bi bi-arrow-left me-1"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

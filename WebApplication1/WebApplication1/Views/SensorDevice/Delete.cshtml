@@ -1,0 +1,88 @@
+@model WebApplication1.Models.SensorDevice
+
+@{
+    ViewData["Title"] = "Delete Sensor Device";
+    var statusClass = Model.Status switch {
+        "Active"      => "bg-success",
+        "Inactive"    => "bg-danger",
+        "Maintenance" => "bg-warning text-dark",
+        _             => "bg-secondary"
+    };
+    var typeIcon = Model.DeviceType switch {
+        "Temp"     => "bi-thermometer-half",
+        "Humidity" => "bi-droplet-half",
+        "GPS"      => "bi-geo-alt-fill",
+        _          => "bi-cpu"
+    };
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Sensor Devices</a></li>
+                    <li class="breadcrumb-item active text-danger">Delete</li>
+                </ol>
+            </nav>
+
+            <div class="delete-card">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                    <h5 class="mb-0 fw-semibold">Confirm Deletion</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-danger d-flex align-items-center gap-2 rounded-3 mb-3">
+                        <i class="bi bi-exclamation-circle-fill fs-5 flex-shrink-0"></i>
+                        <div>
+                            <strong>Warning!</strong> This action cannot be undone.
+                            @if (Model.TelemetryRecords != null && Model.TelemetryRecords.Any())
+                            {
+                                <div class="mt-1 small">This device has <strong>@Model.TelemetryRecords.Count</strong> telemetry record(s) that may also be affected.</div>
+                            }
+                        </div>
+                    </div>
+
+                    <p class="text-muted mb-3 small">You are about to permanently delete the following sensor device:</p>
+
+                    <div class="bg-light rounded-3 p-3 mb-4">
+                        <div class="d-flex align-items-center gap-3 mb-2">
+                            <div class="avatar-icon bg-danger bg-opacity-10 text-danger rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-cpu"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold">Sensor #@Model.SensorId</div>
+                                <small class="text-muted">
+                                    <i class="bi @typeIcon me-1"></i>@Model.DeviceType
+                                    @if (!string.IsNullOrWhiteSpace(Model.AssignedTo))
+                                    {
+                                        <span>&bull; @Model.AssignedTo</span>
+                                    }
+                                </small>
+                            </div>
+                        </div>
+                        <span class="badge @statusClass badge-status">@Model.Status</span>
+                        <span class="badge bg-light text-dark border ms-1">
+                            <i class="bi bi-reception-4 me-1"></i>@Model.TelemetryRecords.Count reading(s)
+                        </span>
+                    </div>
+
+                    <form asp-action="Delete">
+                        <input type="hidden" asp-for="SensorId" />
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger px-4 fw-semibold">
+                                <i class="bi bi-trash me-1"></i>Yes, Delete
+                            </button>
+                            <a asp-action="Index" class="btn btn-light px-4">
+                                <i class="bi bi-arrow-left me-1"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

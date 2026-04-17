@@ -1,0 +1,96 @@
+@model WebApplication1.Models.TransferOrder
+
+@{
+    ViewData["Title"] = "Edit Transfer Order";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Transfer Orders</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </nav>
+
+            <div class="form-card">
+                <div class="card-header edit-header d-flex align-items-center gap-2">
+                    <i class="bi bi-pencil-square fs-5"></i>
+                    <h5 class="mb-0 fw-semibold">Edit Transfer Order <span class="opacity-75 small fw-normal">#@Model.TransferId</span></h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 rounded-3 small mb-3"></div>
+                        <input type="hidden" asp-for="TransferId" />
+
+                        <div class="mb-3">
+                            <label asp-for="FromFacilityId" class="form-label">From Facility <span class="text-danger">*</span></label>
+                            <select asp-for="FromFacilityId" class="form-select"
+                                    asp-items="ViewBag.FromFacilityId">
+                                <option value="">-- Select Source Facility --</option>
+                            </select>
+                            <span asp-validation-for="FromFacilityId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ToFacilityId" class="form-label">To Facility <span class="text-danger">*</span></label>
+                            <select asp-for="ToFacilityId" class="form-select"
+                                    asp-items="ViewBag.ToFacilityId">
+                                <option value="">-- Select Destination Facility --</option>
+                            </select>
+                            <span asp-validation-for="ToFacilityId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ItemId" class="form-label">Item <span class="text-danger">*</span></label>
+                            <select asp-for="ItemId" class="form-select"
+                                    asp-items="ViewBag.ItemId">
+                                <option value="">-- Select Item --</option>
+                            </select>
+                            <span asp-validation-for="ItemId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Quantity" class="form-label">Quantity <span class="text-danger">*</span></label>
+                            <input asp-for="Quantity" class="form-control" type="number"
+                                   step="0.01" min="0" />
+                            <span asp-validation-for="Quantity" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Status" class="form-label">Status <span class="text-danger">*</span></label>
+                            <select asp-for="Status" class="form-select">
+                                <option value="">-- Select Status --</option>
+                                <option value="Pending">Pending</option>
+                                <option value="In Transit">In Transit</option>
+                                <option value="Delivered">Delivered</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-warning px-4 fw-semibold text-white">
+                                <i class="bi bi-save me-1"></i>Save Changes
+                            </button>
+                            <a asp-action="Details" asp-route-id="@Model.TransferId" class="btn btn-light px-4">
+                                <i class="bi bi-eye me-1"></i>View Details
+                            </a>
+                            <a asp-action="Index" class="btn btn-light px-4">
+                                <i class="bi bi-arrow-left me-1"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

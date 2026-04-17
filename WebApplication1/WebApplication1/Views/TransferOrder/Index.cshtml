@@ -1,0 +1,177 @@
+@model IEnumerable<WebApplication1.Models.TransferOrder>
+
+@{
+    ViewData["Title"] = "Transfer Orders";
+}
+
+<div class="container-fluid py-4 px-4">
+
+    <!-- Page Header -->
+    <div class="page-header mb-4" style="background: linear-gradient(135deg, #fd7e14 0%, #dc6a0e 100%);">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h2 class="mb-1"><i class="bi bi-arrow-left-right me-2"></i>Transfer Orders</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Transfer Orders</li>
+                    </ol>
+                </nav>
+            </div>
+            <a asp-action="Create" class="btn btn-light fw-semibold px-4 shadow-sm">
+                <i class="bi bi-plus-lg me-1"></i>New Transfer Order
+            </a>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4 shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["SuccessUpdate"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show rounded-3 mb-4 shadow-sm" role="alert">
+            <i class="bi bi-pencil-fill me-2"></i>@TempData["SuccessUpdate"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["SuccessDelete"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show rounded-3 mb-4 shadow-sm" role="alert">
+            <i class="bi bi-trash-fill me-2"></i>@TempData["SuccessDelete"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Table Card -->
+    <div class="data-card">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span class="fw-semibold text-secondary small">
+                <i class="bi bi-list-ul me-1"></i>All Transfer Orders
+                <span class="badge ms-2" style="background-color:#fd7e14;">@Model.Count()</span>
+            </span>
+            <input type="text" id="searchInput" class="search-box" placeholder="Search transfer orders..." style="width:280px;">
+        </div>
+
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table" id="transferOrderTable">
+                    <thead>
+                        <tr>
+                            <th style="width:50px">#</th>
+                            <th>Transfer ID</th>
+                            <th>From Facility</th>
+                            <th style="width:30px"></th>
+                            <th>To Facility</th>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Status</th>
+                            <th class="text-center" style="width:140px">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ int i = 1; }
+                        @foreach (var item in Model)
+                        {
+                            var statusClass = item.Status switch {
+                                "Pending"    => "bg-warning text-dark",
+                                "In Transit" => "bg-info text-dark",
+                                "Delivered"  => "bg-success",
+                                "Cancelled"  => "bg-danger",
+                                _            => "bg-secondary"
+                            };
+                            var statusIcon = item.Status switch {
+                                "Pending"    => "bi-hourglass-split",
+                                "In Transit" => "bi-truck",
+                                "Delivered"  => "bi-check-circle-fill",
+                                "Cancelled"  => "bi-x-circle-fill",
+                                _            => "bi-circle"
+                            };
+                            <tr>
+                                <td class="text-muted">@i</td>
+                                <td>
+                                    <span class="fw-semibold text-muted">#@item.TransferId</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar-icon bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-hospital"></i>
+                                        </div>
+                                        <span class="fw-semibold">@(item.FromFacility?.Name ?? "—")</span>
+                                    </div>
+                                </td>
+                                <td class="text-center text-muted">
+                                    <i class="bi bi-arrow-right fs-5"></i>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar-icon bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-hospital"></i>
+                                        </div>
+                                        <span class="fw-semibold">@(item.ToFacility?.Name ?? "—")</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <i class="bi bi-capsule text-muted me-1"></i>
+                                    @(item.Item?.ItemName ?? "—")
+                                </td>
+                                <td>
+                                    <span class="fw-semibold">@item.Quantity</span>
+                                </td>
+                                <td>
+                                    <span class="badge @statusClass badge-status">
+                                        <i class="bi @statusIcon me-1"></i>@item.Status
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-1">
+                                        <a asp-action="Details" asp-route-id="@item.TransferId"
+                                           class="btn btn-sm btn-outline-info" title="View Details">
+                                            <i class="bi bi-eye-fill"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.TransferId"
+                                           class="btn btn-sm btn-outline-warning" title="Edit">
+                                            <i class="bi bi-pencil-fill"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.TransferId"
+                                           class="btn btn-sm btn-outline-danger" title="Delete">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            i++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="bi bi-arrow-left-right"></i>
+                <p class="fw-semibold mb-1">No transfer orders found</p>
+                <p class="small mb-3">Get started by creating your first transfer order.</p>
+                <a asp-action="Create" class="btn px-4 text-white fw-semibold" style="background-color:#fd7e14;">
+                    <i class="bi bi-plus-lg me-1"></i>New Transfer Order
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('searchInput').addEventListener('keyup', function () {
+            const filter = this.value.toLowerCase();
+            document.querySelectorAll('#transferOrderTable tbody tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+            });
+        });
+    </script>
+}

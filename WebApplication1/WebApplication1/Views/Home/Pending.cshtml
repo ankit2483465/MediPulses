@@ -1,0 +1,218 @@
+@{
+    ViewData["Title"] = "Awaiting Role Assignment";
+}
+
+<style>
+    .pending-wrap {
+        min-height: calc(100vh - 130px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .pending-card {
+        max-width: 520px;
+        width: 100%;
+        background: #fff;
+        border-radius: 24px;
+        box-shadow: 0 12px 48px rgba(0,0,0,0.12);
+        overflow: hidden;
+        text-align: center;
+    }
+
+    .pending-top {
+        background: linear-gradient(135deg, #0a1628 0%, #0d2144 55%, #112d6b 100%);
+        padding: 2.5rem 2rem 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .pending-top::before {
+        content: '';
+        position: absolute;
+        width: 260px; height: 260px;
+        background: rgba(59,130,246,0.07);
+        border-radius: 50%;
+        top: -80px; right: -60px;
+    }
+    .pending-top::after {
+        content: '';
+        position: absolute;
+        width: 160px; height: 160px;
+        background: rgba(239,68,68,0.05);
+        border-radius: 50%;
+        bottom: -50px; left: -30px;
+    }
+
+    .pending-icon-ring {
+        width: 88px; height: 88px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.08);
+        border: 2px solid rgba(255,255,255,0.14);
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 2.4rem;
+        position: relative; z-index: 1;
+        animation: float 3s ease-in-out infinite;
+    }
+    @@keyframes float {
+        0%,100% { transform: translateY(0); }
+        50%      { transform: translateY(-8px); }
+    }
+
+    .pending-top h4 {
+        font-size: 1.35rem; font-weight: 800;
+        color: #fff; letter-spacing: -0.02em;
+        margin: 1rem 0 0.35rem;
+        position: relative; z-index: 1;
+    }
+    .pending-top p {
+        color: rgba(255,255,255,0.55);
+        font-size: 0.85rem; margin: 0;
+        position: relative; z-index: 1;
+    }
+
+    .pending-body { padding: 2rem 2.5rem 2.5rem; }
+
+    .pending-user-chip {
+        display: inline-flex; align-items: center; gap: 0.6rem;
+        background: #f0f4ff;
+        border: 1px solid #c7d2fe;
+        border-radius: 40px;
+        padding: 0.45rem 1.1rem;
+        font-size: 0.82rem; font-weight: 600; color: #3730a3;
+        margin-bottom: 1.5rem;
+    }
+    .pending-user-chip i { color: #6366f1; }
+
+    .pending-desc {
+        font-size: 0.9rem; color: #6b7280; line-height: 1.65;
+        margin-bottom: 1.75rem;
+    }
+    .pending-desc strong { color: #374151; }
+
+    /* Steps */
+    .pending-steps {
+        display: flex; flex-direction: column; gap: 0.75rem;
+        margin-bottom: 1.75rem;
+        text-align: left;
+    }
+    .step-row {
+        display: flex; align-items: center; gap: 0.85rem;
+        background: #f8fafc;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 0.7rem 1rem;
+    }
+    .step-num {
+        width: 28px; height: 28px;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.72rem; font-weight: 800;
+        flex-shrink: 0;
+    }
+    .step-done  { background: #d1fae5; color: #065f46; }
+    .step-wait  { background: #fef3c7; color: #92400e; }
+    .step-lock  { background: #e0e7ff; color: #3730a3; }
+    .step-text  { font-size: 0.82rem; color: #374151; font-weight: 500; }
+    .step-badge {
+        margin-left: auto;
+        font-size: 0.68rem; font-weight: 700;
+        border-radius: 20px; padding: 0.15rem 0.6rem;
+        flex-shrink: 0;
+    }
+    .sb-done { background: #d1fae5; color: #065f46; }
+    .sb-wait { background: #fef3c7; color: #92400e; }
+    .sb-soon { background: #e0e7ff; color: #3730a3; }
+
+    /* Pulse status bar */
+    .status-bar {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        display: flex; align-items: center; gap: 0.65rem;
+        font-size: 0.8rem; color: #92400e; font-weight: 500;
+        margin-bottom: 1.5rem;
+    }
+    .pulse-dot {
+        width: 9px; height: 9px; border-radius: 50%;
+        background: #f59e0b;
+        flex-shrink: 0;
+        animation: pulse-amber 1.8s infinite;
+    }
+    @@keyframes pulse-amber {
+        0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.4); }
+        60%      { box-shadow: 0 0 0 7px rgba(245,158,11,0); }
+    }
+
+    .btn-logout-pending {
+        background: linear-gradient(135deg, #0d2144, #0f2d5c);
+        color: #fff; border: none;
+        border-radius: 12px;
+        padding: 0.7rem 2rem;
+        font-size: 0.9rem; font-weight: 700;
+        width: 100%;
+        transition: opacity 0.2s, box-shadow 0.2s;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .btn-logout-pending:hover {
+        opacity: 0.88;
+        color: #fff;
+        box-shadow: 0 6px 20px rgba(13,33,68,0.35);
+    }
+</style>
+
+<div class="pending-wrap">
+    <div class="pending-card">
+
+        <div class="pending-top">
+            <div class="pending-icon-ring">
+                <i class="bi bi-person-lock" style="background:linear-gradient(135deg,#93c5fd,#e879f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;"></i>
+            </div>
+            <h4>Account Pending Activation</h4>
+            <p>Your account is registered — access will be granted shortly.</p>
+        </div>
+
+        <div class="pending-body">
+
+            <div class="pending-user-chip">
+                <i class="bi bi-person-fill"></i>
+                Hello, @ViewBag.Name
+            </div>
+
+            <div class="status-bar">
+                <span class="pulse-dot"></span>
+                Waiting for an Administrator to assign your clinical role.
+            </div>
+
+            <p class="pending-desc">
+                Your account has been <strong>successfully created</strong>. Before you can access MediPulse, an
+                <strong>Admin</strong> needs to assign you a clinical role that matches your responsibilities.
+            </p>
+
+            <div class="pending-steps">
+                <div class="step-row">
+                    <div class="step-num step-done"><i class="bi bi-check"></i></div>
+                    <span class="step-text">Account created successfully</span>
+                    <span class="step-badge sb-done">Done</span>
+                </div>
+                <div class="step-row">
+                    <div class="step-num step-wait"><i class="bi bi-hourglass-split"></i></div>
+                    <span class="step-text">Admin assigns your clinical role</span>
+                    <span class="step-badge sb-wait">Pending</span>
+                </div>
+                <div class="step-row">
+                    <div class="step-num step-lock"><i class="bi bi-unlock"></i></div>
+                    <span class="step-text">Full dashboard access unlocked</span>
+                    <span class="step-badge sb-soon">Soon</span>
+                </div>
+            </div>
+
+            <a asp-controller="Account" asp-action="Logout" class="btn-logout-pending">
+                <i class="bi bi-box-arrow-left me-2"></i>Sign Out
+            </a>
+
+        </div>
+    </div>
+</div>

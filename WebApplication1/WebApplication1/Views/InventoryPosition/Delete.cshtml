@@ -1,0 +1,113 @@
+@model WebApplication1.Models.InventoryPosition
+
+@{
+    ViewData["Title"] = "Delete Inventory Position";
+    var today          = DateTime.Today;
+    bool isExpired     = Model.ExpiryDate.HasValue && Model.ExpiryDate.Value.Date < today;
+    bool isExpiringSoon = Model.ExpiryDate.HasValue && !isExpired && Model.ExpiryDate.Value.Date <= today.AddDays(30);
+    bool isLowStock    = Model.QuantityOnHand.HasValue && Model.SafetyStock.HasValue && Model.QuantityOnHand <= Model.SafetyStock;
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Inventory</a></li>
+                    <li class="breadcrumb-item active text-danger">Delete</li>
+                </ol>
+            </nav>
+
+            <div class="delete-card">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                    <h5 class="mb-0 fw-semibold">Confirm Deletion</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-danger d-flex align-items-center gap-2 rounded-3 mb-3">
+                        <i class="bi bi-exclamation-circle-fill fs-5 flex-shrink-0"></i>
+                        <div><strong>Warning!</strong> This action cannot be undone.</div>
+                    </div>
+
+                    <p class="text-muted mb-3 small">You are about to permanently delete the following inventory position:</p>
+
+                    <div class="bg-light rounded-3 p-3 mb-4">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="avatar-icon bg-danger bg-opacity-10 text-danger rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-boxes"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold">@(Model.Item?.ItemName ?? "Unknown Item")</div>
+                                <small class="text-muted">ID: @Model.InventoryId</small>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 small">
+                            <div class="col-6">
+                                <span class="text-muted">Facility:</span>
+                                <span class="ms-1 fw-semibold">@(Model.Facility?.Name ?? "—")</span>
+                            </div>
+                            <div class="col-6">
+                                <span class="text-muted">Zone:</span>
+                                <span class="ms-1 fw-semibold">@(Model.Zone?.Name ?? "—")</span>
+                            </div>
+                            <div class="col-6">
+                                <span class="text-muted">Lot ID:</span>
+                                <span class="ms-1 fw-semibold">@(Model.LotId ?? "—")</span>
+                            </div>
+                            <div class="col-6">
+                                <span class="text-muted">Qty on Hand:</span>
+                                <span class="ms-1 fw-semibold">@(Model.QuantityOnHand?.ToString("N2") ?? "—")</span>
+                            </div>
+                            @if (Model.ExpiryDate.HasValue)
+                            {
+                                <div class="col-12">
+                                    <span class="text-muted">Expiry:</span>
+                                    <span class="ms-1 fw-semibold @(isExpired ? "text-danger" : isExpiringSoon ? "text-warning" : "text-success")">
+                                        @Model.ExpiryDate.Value.ToString("dd MMM yyyy")
+                                    </span>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="mt-2 d-flex gap-1 flex-wrap">
+                            @if (isLowStock)
+                            {
+                                <span class="badge bg-danger badge-status" style="font-size:0.65rem;">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>Low Stock
+                                </span>
+                            }
+                            @if (isExpired)
+                            {
+                                <span class="badge bg-danger badge-status" style="font-size:0.65rem;">
+                                    <i class="bi bi-x-circle-fill me-1"></i>Expired
+                                </span>
+                            }
+                            else if (isExpiringSoon)
+                            {
+                                <span class="badge bg-warning text-dark badge-status" style="font-size:0.65rem;">
+                                    <i class="bi bi-clock-fill me-1"></i>Expiring Soon
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                    <form asp-action="Delete">
+                        <input type="hidden" asp-for="InventoryId" />
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger px-4 fw-semibold">
+                                <i class="bi bi-trash me-1"></i>Yes, Delete
+                            </button>
+                            <a asp-action="Index" class="btn btn-light px-4">
+                                <i class="bi bi-arrow-left me-1"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

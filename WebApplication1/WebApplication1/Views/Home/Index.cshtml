@@ -1,33 +1,397 @@
-﻿@model IEnumerable<WebApplication1.Models.User>
+@{
+    ViewData["Title"] = "Dashboard";
+    var role = ViewBag.UserRole as string ?? "";
 
-<h1>Welcome, @ViewBag.Name!</h1>
-<p>You have successfully logged into the system.</p>
-<a href="/Account/Logout" class="btn btn-danger">Logout</a>
+    bool isAdmin       = role == "Admin";
+    bool isSupply      = role == "Clinical Supply Manager";
+    bool isPharmacy    = role == "Pharmacy Manager";
+    bool isProcurement = role == "Procurement Officer";
+    bool isColdChain   = role == "Cold Chain Operator";
+    bool isBiomedical  = role == "Biomedical Engineer / Device Manager";
+    bool isNursing     = role == "Nursing / Ward Staff";
+    bool isCompliance  = role == "Compliance Officer";
 
+    // Per-widget permissions (mirrors controller access)
+    bool canSeeFacilities  = isAdmin || isSupply || isPharmacy || isProcurement || isColdChain || isBiomedical || isCompliance;
+    bool canSeeSuppliers   = isAdmin || isProcurement || isPharmacy || isCompliance;
+    bool canSeeItems       = isAdmin || isSupply || isPharmacy || isBiomedical || isCompliance;
+    bool canSeeZones       = isAdmin || isSupply || isColdChain || isCompliance;
+    bool canSeeInventory   = isAdmin || isSupply || isPharmacy || isBiomedical || isNursing || isCompliance;
+    bool canSeePOs         = isAdmin || isProcurement || isPharmacy || isSupply;
+    bool canSeeSensors     = isAdmin || isColdChain;
+    bool canSeeTelemetry   = isAdmin || isColdChain || isCompliance;
+    bool canSeeTransfers   = isAdmin || isSupply || isBiomedical || isProcurement;
+    bool canSeeConsumption = isAdmin || isSupply || isNursing || isPharmacy;
 
-<h2>Registered Users</h2>
+    // Alert visibility
+    bool showInventoryAlert = canSeeInventory && (int)ViewBag.ExpiredCount > 0;
+    bool showExcursionAlert = (canSeeSensors || canSeeTelemetry) && (int)ViewBag.Excursions > 0;
+}
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Phone</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var user in Model)
-        {
-            <tr>
-                <td>@user.Name</td>
-                <td>@user.Email</td>
-                <td>
-                    @* Check if Role is null before displaying *@
-                    @(string.IsNullOrEmpty(user.Role) ? "No Role Assigned" : user.Role)
-                </td>
-                <td>@user.Phone</td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="container-fluid py-4 px-4">
+
+    <!-- Welcome Header -->
+    <div class="page-header mb-4" style="background: linear-gradient(135deg, #0a1628 0%, #0f2d5c 100%);">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h2 class="mb-1">
+                    <i class="bi bi-speedometer2 me-2"></i>Control Tower Dashboard
+                </h2>
+                <p class="mb-0 opacity-75">
+                    Welcome back, <strong>@ViewBag.Name</strong> &mdash;
+                    <span class="badge bg-white bg-opacity-20 text-black ms-1">@role</span>
+                </p>
+            </div>
+            <div class="text-white-50 small">
+                <i class="bi bi-calendar3 me-1"></i>@DateTime.Now.ToString("dddd, MMMM dd yyyy")
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Banner -->
+    @if (showInventoryAlert || showExcursionAlert)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4 d-flex align-items-center gap-2" role="alert">
+            <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+            <div>
+                <strong>Action Required:</strong>
+                @if (showInventoryAlert)
+                {
+                    <span class="me-3"><i class="bi bi-hourglass-bottom me-1"></i>@ViewBag.ExpiredCount expired inventory lot(s)</span>
+                }
+                @if (showExcursionAlert)
+                {
+                    <span><i class="bi bi-thermometer-high me-1"></i>@ViewBag.Excursions temperature excursion(s) detected</span>
+                }
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- ── Row 1: Master Data KPIs ── -->
+    @if (canSeeFacilities || canSeeSuppliers || canSeeItems || canSeeZones)
+    {
+        <div class="row g-3 mb-4">
+            @if (canSeeFacilities)
+            {
+                <div class="col-6 col-md-3">
+                    <a asp-controller="Facilities" asp-action="Index" class="text-decoration-none">
+                        <div class="kpi-card" style="--kpi-color: #0d6efd;">
+                            <div class="kpi-icon"><i class="bi bi-hospital-fill"></i></div>
+                            <div class="kpi-value">@ViewBag.TotalFacilities</div>
+                            <div class="kpi-label">Facilities</div>
+                        </div>
+                    </a>
+                </div>
+            }
+            @if (canSeeSuppliers)
+            {
+                <div class="col-6 col-md-3">
+                    <a asp-controller="Supplier" asp-action="Index" class="text-decoration-none">
+                        <div class="kpi-card" style="--kpi-color: #6610f2;">
+                            <div class="kpi-icon"><i class="bi bi-truck-fill"></i></div>
+                            <div class="kpi-value">@ViewBag.TotalSuppliers</div>
+                            <div class="kpi-label">Suppliers</div>
+                        </div>
+                    </a>
+                </div>
+            }
+            @if (canSeeItems)
+            {
+                <div class="col-6 col-md-3">
+                    <a asp-controller="Item" asp-action="Index" class="text-decoration-none">
+                        <div class="kpi-card" style="--kpi-color: #198754;">
+                            <div class="kpi-icon"><i class="bi bi-capsule-pill"></i></div>
+                            <div class="kpi-value">@ViewBag.TotalItems</div>
+                            <div class="kpi-label">Items</div>
+                        </div>
+                    </a>
+                </div>
+            }
+            @if (canSeeZones)
+            {
+                <div class="col-6 col-md-3">
+                    <a asp-controller="StorageZones" asp-action="Index" class="text-decoration-none">
+                        <div class="kpi-card" style="--kpi-color: #0dcaf0;">
+                            <div class="kpi-icon"><i class="bi bi-boxes"></i></div>
+                            <div class="kpi-value">@ViewBag.TotalZones</div>
+                            <div class="kpi-label">Storage Zones</div>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- ── Row 2: Inventory KPIs ── -->
+    @if (canSeeInventory)
+    {
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <a asp-controller="InventoryPosition" asp-action="Index" class="text-decoration-none">
+                    <div class="kpi-card" style="--kpi-color: #20c997;">
+                        <div class="kpi-icon"><i class="bi bi-bar-chart-steps"></i></div>
+                        <div class="kpi-value">@ViewBag.TotalPositions</div>
+                        <div class="kpi-label">Stock Positions</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a asp-controller="InventoryPosition" asp-action="Index" class="text-decoration-none">
+                    <div class="kpi-card" style="--kpi-color: #ffc107;">
+                        <div class="kpi-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                        <div class="kpi-value">@ViewBag.LowStockCount</div>
+                        <div class="kpi-label">Low Stock</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a asp-controller="InventoryPosition" asp-action="Index" class="text-decoration-none">
+                    <div class="kpi-card" style="--kpi-color: #fd7e14;">
+                        <div class="kpi-icon"><i class="bi bi-hourglass-split"></i></div>
+                        <div class="kpi-value">@ViewBag.ExpiringSoon</div>
+                        <div class="kpi-label">Expiring (30d)</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a asp-controller="InventoryPosition" asp-action="Index" class="text-decoration-none">
+                    <div class="kpi-card" style="--kpi-color: #dc3545;">
+                        <div class="kpi-icon"><i class="bi bi-x-circle-fill"></i></div>
+                        <div class="kpi-value">@ViewBag.ExpiredCount</div>
+                        <div class="kpi-label">Expired Lots</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    }
+
+    <!-- ── Row 3: Operational KPIs ── -->
+    @if (canSeePOs || canSeeSensors || canSeeTransfers)
+    {
+        <div class="row g-3 mb-4">
+            @if (canSeePOs)
+            {
+                <div class="col-6 col-md-4">
+                    <a asp-controller="PurchaseOrder" asp-action="Index" class="text-decoration-none">
+                        <div class="kpi-card" style="--kpi-color: #0a58ca;">
+                            <div class="kpi-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
+                            <div class="kpi-value">@ViewBag.TotalPOs</div>
+                            <div class="kpi-label">Purchase Orders
+                                @if ((int)ViewBag.PendingPOs > 0)
+                                {
+                                    <span class="badge bg-warning text-dark ms-1">@ViewBag.PendingPOs pending</span>
+                                }
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            }
+            @if (canSeeSensors || canSeeTelemetry)
+            {
+                <div class="col-6 col-md-4">
+                    <a asp-controller="@(canSeeSensors ? "SensorDevice" : "TelemetryRecord")" asp-action="Index" class="text-decoration-none">
+                        <div class="kpi-card" style="--kpi-color: #0dcaf0;">
+                            <div class="kpi-icon"><i class="bi bi-cpu-fill"></i></div>
+                            <div class="kpi-value">@ViewBag.ActiveSensors</div>
+                            <div class="kpi-label">Active Sensors
+                                @if ((int)ViewBag.Excursions > 0)
+                                {
+                                    <span class="badge bg-danger ms-1">@ViewBag.Excursions excursions</span>
+                                }
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            }
+            @if (canSeeTransfers)
+            {
+                <div class="col-6 col-md-4">
+                    <a asp-controller="TransferOrder" asp-action="Index" class="text-decoration-none">
+                        <div class="kpi-card" style="--kpi-color: #fd7e14;">
+                            <div class="kpi-icon"><i class="bi bi-arrow-left-right"></i></div>
+                            <div class="kpi-value">@ViewBag.PendingTransfers</div>
+                            <div class="kpi-label">Active Transfers</div>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- ── Row 4: Recent Activity ── -->
+    @if (canSeePOs || canSeeTransfers || canSeeConsumption)
+    {
+        <div class="row g-4">
+
+            <!-- Recent Purchase Orders -->
+            @if (canSeePOs)
+            {
+                <div class="col-lg-6">
+                    <div class="data-card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span class="fw-semibold text-secondary small"><i class="bi bi-file-earmark-text me-1"></i>Recent Purchase Orders</span>
+                            <a asp-controller="PurchaseOrder" asp-action="Index" class="btn btn-sm btn-outline-primary">View All</a>
+                        </div>
+                        @{
+                            var recentPOs = ViewBag.RecentPOs as IEnumerable<WebApplication1.Models.PurchaseOrder>;
+                        }
+                        @if (recentPOs != null && recentPOs.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>PO #</th>
+                                            <th>Supplier</th>
+                                            <th>Order Date</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var po in recentPOs)
+                                        {
+                                            var poStatusClass = po.Status switch {
+                                                "Approved"  => "bg-success",
+                                                "Submitted" => "bg-primary",
+                                                "Received"  => "bg-info text-dark",
+                                                "Cancelled" => "bg-danger",
+                                                _           => "bg-secondary"
+                                            };
+                                            <tr>
+                                                <td class="fw-semibold text-primary">PO-@po.Poid</td>
+                                                <td>@(po.Supplier?.Name ?? "—")</td>
+                                                <td class="text-muted small">@po.OrderDate?.ToString("MMM dd, yyyy")</td>
+                                                <td><span class="badge @poStatusClass badge-status">@po.Status</span></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="empty-state py-4">
+                                <i class="bi bi-file-earmark-text"></i>
+                                <p class="small mb-0">No purchase orders yet</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Recent Transfer Orders -->
+            @if (canSeeTransfers)
+            {
+                <div class="col-lg-6">
+                    <div class="data-card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span class="fw-semibold text-secondary small"><i class="bi bi-arrow-left-right me-1"></i>Recent Transfer Orders</span>
+                            <a asp-controller="TransferOrder" asp-action="Index" class="btn btn-sm btn-outline-warning">View All</a>
+                        </div>
+                        @{
+                            var recentTransfers = ViewBag.RecentTransfers as IEnumerable<WebApplication1.Models.TransferOrder>;
+                        }
+                        @if (recentTransfers != null && recentTransfers.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>From</th>
+                                            <th>To</th>
+                                            <th>Item</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var t in recentTransfers)
+                                        {
+                                            var tStatusClass = t.Status switch {
+                                                "Delivered"  => "bg-success",
+                                                "In Transit" => "bg-info text-dark",
+                                                "Pending"    => "bg-warning text-dark",
+                                                "Cancelled"  => "bg-danger",
+                                                _            => "bg-secondary"
+                                            };
+                                            <tr>
+                                                <td class="small">@(t.FromFacility?.Name ?? "—")</td>
+                                                <td class="small">@(t.ToFacility?.Name ?? "—")</td>
+                                                <td class="small text-muted">@(t.Item?.ItemName ?? "—")</td>
+                                                <td><span class="badge @tStatusClass badge-status">@t.Status</span></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="empty-state py-4">
+                                <i class="bi bi-arrow-left-right"></i>
+                                <p class="small mb-0">No transfer orders yet</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Recent Consumption (Nursing / Ward Staff specific) -->
+            @if (canSeeConsumption && !canSeePOs && !canSeeTransfers)
+            {
+                <div class="col-lg-6">
+                    <div class="data-card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span class="fw-semibold text-secondary small"><i class="bi bi-bag-check me-1"></i>Recent Consumption</span>
+                            <a asp-controller="ConsumptionRecord" asp-action="Index" class="btn btn-sm btn-outline-success">View All</a>
+                        </div>
+                        <div class="empty-state py-4">
+                            <i class="bi bi-bag-check"></i>
+                            <p class="small mb-0">View consumption records</p>
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+    }
+
+</div>
+
+@section Scripts {
+<style>
+    .kpi-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 1.25rem 1.5rem;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+        border-left: 4px solid var(--kpi-color);
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+        cursor: pointer;
+    }
+    .kpi-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+    }
+    .kpi-icon {
+        font-size: 1.6rem;
+        color: var(--kpi-color);
+        margin-bottom: 0.5rem;
+        opacity: 0.85;
+    }
+    .kpi-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1;
+        margin-bottom: 0.3rem;
+    }
+    .kpi-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+</style>
+}

@@ -1,0 +1,190 @@
+@model IEnumerable<WebApplication1.Models.PurchaseOrder>
+
+@{
+    ViewData["Title"] = "Purchase Orders";
+}
+
+<div class="container-fluid py-4 px-4">
+
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h2 class="mb-1"><i class="bi bi-cart-check me-2"></i>Purchase Orders</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Purchase Orders</li>
+                    </ol>
+                </nav>
+            </div>
+            <a asp-action="Create" class="btn btn-light fw-semibold px-4 shadow-sm">
+                <i class="bi bi-plus-lg me-1"></i>New Purchase Order
+            </a>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4 shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["SuccessUpdate"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show rounded-3 mb-4 shadow-sm" role="alert">
+            <i class="bi bi-pencil-fill me-2"></i>@TempData["SuccessUpdate"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["SuccessDelete"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show rounded-3 mb-4 shadow-sm" role="alert">
+            <i class="bi bi-trash-fill me-2"></i>@TempData["SuccessDelete"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Table Card -->
+    <div class="data-card">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span class="fw-semibold text-secondary small">
+                <i class="bi bi-list-ul me-1"></i>All Purchase Orders
+                <span class="badge bg-primary ms-2">@Model.Count()</span>
+            </span>
+            <input type="text" id="searchInput" class="search-box" placeholder="Search purchase orders..." style="width:280px;">
+        </div>
+
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table" id="poTable">
+                    <thead>
+                        <tr>
+                            <th style="width:50px">#</th>
+                            <th>PO Reference</th>
+                            <th>Supplier</th>
+                            <th>Order Date</th>
+                            <th>Expected Delivery</th>
+                            <th>Status</th>
+                            <th class="text-center" style="width:140px">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ int i = 1; }
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="text-muted">@i</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar-icon bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-file-earmark-text"></i>
+                                        </div>
+                                        <span class="fw-semibold">PO #@item.Poid</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (item.Supplier != null)
+                                    {
+                                        <span class="text-muted small"><i class="bi bi-building me-1"></i>@item.Supplier.Name</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small fst-italic">N/A</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.OrderDate.HasValue)
+                                    {
+                                        <span class="small">@item.OrderDate.Value.ToString("MMM dd, yyyy")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small fst-italic">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.ExpectedDeliveryDate.HasValue)
+                                    {
+                                        <span class="small">@item.ExpectedDeliveryDate.Value.ToString("MMM dd, yyyy")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small fst-italic">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        var statusClass = item.Status switch
+                                        {
+                                            "Draft"      => "bg-secondary",
+                                            "Submitted"  => "bg-primary",
+                                            "Approved"   => "bg-success",
+                                            "Received"   => "bg-info text-dark",
+                                            "Cancelled"  => "bg-danger",
+                                            _            => "bg-secondary"
+                                        };
+                                        var statusIcon = item.Status switch
+                                        {
+                                            "Draft"      => "bi-pencil",
+                                            "Submitted"  => "bi-send",
+                                            "Approved"   => "bi-check-circle-fill",
+                                            "Received"   => "bi-inbox-fill",
+                                            "Cancelled"  => "bi-x-circle-fill",
+                                            _            => "bi-circle"
+                                        };
+                                    }
+                                    <span class="badge @statusClass badge-status">
+                                        <i class="bi @statusIcon me-1"></i>@item.Status
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-1">
+                                        <a asp-action="Details" asp-route-id="@item.Poid"
+                                           class="btn btn-sm btn-outline-info" title="View Details">
+                                            <i class="bi bi-eye-fill"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.Poid"
+                                           class="btn btn-sm btn-outline-warning" title="Edit">
+                                            <i class="bi bi-pencil-fill"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.Poid"
+                                           class="btn btn-sm btn-outline-danger" title="Delete">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            i++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="bi bi-cart-x"></i>
+                <p class="fw-semibold mb-1">No purchase orders found</p>
+                <p class="small mb-3">Get started by creating your first purchase order.</p>
+                <a asp-action="Create" class="btn btn-primary px-4">
+                    <i class="bi bi-plus-lg me-1"></i>New Purchase Order
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('searchInput').addEventListener('keyup', function () {
+            const filter = this.value.toLowerCase();
+            document.querySelectorAll('#poTable tbody tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+            });
+        });
+    </script>
+}

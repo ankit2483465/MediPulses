@@ -1,0 +1,96 @@
+@model WebApplication1.Models.ConsumptionRecord
+
+@{
+    ViewData["Title"] = "Edit Consumption Record";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Consumption Records</a></li>
+                    <li class="breadcrumb-item active">Edit</li>
+                </ol>
+            </nav>
+
+            <div class="form-card">
+                <div class="card-header edit-header d-flex align-items-center gap-2">
+                    <i class="bi bi-pencil-square fs-5"></i>
+                    <h5 class="mb-0 fw-semibold">Edit Consumption Record <span class="opacity-75 small fw-normal">#@Model.ConsumptionId</span></h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 rounded-3 small mb-3"></div>
+                        <input type="hidden" asp-for="ConsumptionId" />
+
+                        <div class="mb-3">
+                            <label asp-for="FacilityId" class="form-label">Facility <span class="text-danger">*</span></label>
+                            <select asp-for="FacilityId" class="form-select"
+                                    asp-items="ViewBag.FacilityId">
+                                <option value="">-- Select Facility --</option>
+                            </select>
+                            <span asp-validation-for="FacilityId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="WardId" class="form-label">Ward ID</label>
+                            <input asp-for="WardId" class="form-control" placeholder="e.g. Ward A, ICU, ER" />
+                            <span asp-validation-for="WardId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ItemId" class="form-label">Item <span class="text-danger">*</span></label>
+                            <select asp-for="ItemId" class="form-select"
+                                    asp-items="ViewBag.ItemId">
+                                <option value="">-- Select Item --</option>
+                            </select>
+                            <span asp-validation-for="ItemId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="QuantityUsed" class="form-label">Quantity Used <span class="text-danger">*</span></label>
+                            <input asp-for="QuantityUsed" class="form-control" type="number"
+                                   step="0.01" min="0" />
+                            <span asp-validation-for="QuantityUsed" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="UsedBy" class="form-label">Used By <span class="text-danger">*</span></label>
+                            <select asp-for="UsedBy" class="form-select"
+                                    asp-items="ViewBag.UsedBy">
+                                <option value="">-- Select User --</option>
+                            </select>
+                            <span asp-validation-for="UsedBy" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Timestamp" class="form-label">Timestamp</label>
+                            <input asp-for="Timestamp" class="form-control" type="datetime-local" />
+                            <span asp-validation-for="Timestamp" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-warning px-4 fw-semibold text-white">
+                                <i class="bi bi-save me-1"></i>Save Changes
+                            </button>
+                            <a asp-action="Details" asp-route-id="@Model.ConsumptionId" class="btn btn-light px-4">
+                                <i class="bi bi-eye me-1"></i>View Details
+                            </a>
+                            <a asp-action="Index" class="btn btn-light px-4">
+                                <i class="bi bi-arrow-left me-1"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

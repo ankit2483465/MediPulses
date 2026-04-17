@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ using WebApplication1.Models;
 
 namespace WebApplication1.Controllers
 {
+    [Authorize(Roles = "Admin,Clinical Supply Manager,Pharmacy Manager,Procurement Officer,Cold Chain Operator,Biomedical Engineer / Device Manager,Compliance Officer")]
     public class FacilitiesController : Controller
     {
         private readonly ApplicationDbContext _context;
