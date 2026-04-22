@@ -127,19 +127,20 @@ namespace WebApplication1.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirm(int? id)
         {
-
-            var SupplierData = await supplierDb.Suppliers.FindAsync(id);
+            var SupplierData = await supplierDb.Suppliers
+                .Include(s => s.PurchaseOrders).ThenInclude(po => po.Receipts)
+                .FirstOrDefaultAsync(s => s.SupplierId == id);
 
             if (SupplierData != null)
             {
+                foreach (var po in SupplierData.PurchaseOrders)
+                    supplierDb.Receipts.RemoveRange(po.Receipts);
+                supplierDb.PurchaseOrders.RemoveRange(SupplierData.PurchaseOrders);
                 supplierDb.Suppliers.Remove(SupplierData);
             }
             await supplierDb.SaveChangesAsync();
             TempData["SuccessDelete"] = "Supplier Deleted.";
             return RedirectToAction("Index", "Supplier");
-
-
-
         }
     }
 }

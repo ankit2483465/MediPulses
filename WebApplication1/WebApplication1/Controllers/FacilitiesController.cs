@@ -143,9 +143,27 @@ namespace WebApplication1.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var facility = await _context.Facilities.FindAsync(id);
+            var facility = await _context.Facilities
+                .Include(f => f.ConsumptionRecords)
+                .Include(f => f.Forecasts)
+                .Include(f => f.InventoryPositions)
+                .Include(f => f.ReplenishmentPlans)
+                .Include(f => f.StorageZones).ThenInclude(z => z.InventoryPositions)
+                .Include(f => f.TransferOrderFromFacilities)
+                .Include(f => f.TransferOrderToFacilities)
+                .FirstOrDefaultAsync(f => f.FacilityId == id);
+
             if (facility != null)
             {
+                _context.ConsumptionRecords.RemoveRange(facility.ConsumptionRecords);
+                _context.Forecasts.RemoveRange(facility.Forecasts);
+                _context.InventoryPositions.RemoveRange(facility.InventoryPositions);
+                _context.ReplenishmentPlans.RemoveRange(facility.ReplenishmentPlans);
+                foreach (var zone in facility.StorageZones)
+                    _context.InventoryPositions.RemoveRange(zone.InventoryPositions);
+                _context.StorageZones.RemoveRange(facility.StorageZones);
+                _context.TransferOrders.RemoveRange(facility.TransferOrderFromFacilities);
+                _context.TransferOrders.RemoveRange(facility.TransferOrderToFacilities);
                 _context.Facilities.Remove(facility);
             }
 

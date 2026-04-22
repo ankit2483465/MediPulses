@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebApplication1.Data;
 using WebApplication1.Models;
 
@@ -64,12 +65,31 @@ namespace WebApplication1.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Delete(int id)
         {
-            var user = _db.Users.Find(id);
+            var currentUserId = HttpContext.Session.GetInt32("UserId");
+            if (currentUserId.HasValue && id == currentUserId.Value)
+            {
+                TempData["Error"] = "You cannot delete your own account.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var user = _db.Users
+                .Include(u => u.AuditLogs)
+                .Include(u => u.ConsumptionRecords)
+                .Include(u => u.Notifications)
+                .Include(u => u.RecallActions)
+                .Include(u => u.Receipts)
+                .FirstOrDefault(u => u.UserId == id);
+
             if (user != null)
             {
+                _db.AuditLogs.RemoveRange(user.AuditLogs);
+                _db.ConsumptionRecords.RemoveRange(user.ConsumptionRecords);
+                _db.Notifications.RemoveRange(user.Notifications);
+                _db.RecallActions.RemoveRange(user.RecallActions);
+                _db.Receipts.RemoveRange(user.Receipts);
                 _db.Users.Remove(user);
                 _db.SaveChanges();
-                TempData["Success"] = "User deleted successfully.";
+                TempData["Success"] = $"{user.Name} has been deleted successfully.";
             }
             return RedirectToAction(nameof(Index));
         }

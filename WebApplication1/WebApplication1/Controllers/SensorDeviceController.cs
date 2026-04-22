@@ -145,9 +145,13 @@ namespace WebApplication1.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var sensorDevice = await _context.SensorDevices.FindAsync(id);
+            var sensorDevice = await _context.SensorDevices
+                .Include(s => s.TelemetryRecords)
+                .FirstOrDefaultAsync(s => s.SensorId == id);
+
             if (sensorDevice != null)
             {
+                _context.TelemetryRecords.RemoveRange(sensorDevice.TelemetryRecords);
                 _context.SensorDevices.Remove(sensorDevice);
             }
 

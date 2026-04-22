@@ -92,6 +92,7 @@ namespace WebApplication1.Controllers
                 // Write to session so HomeController can read the user name
                 HttpContext.Session.SetString("UserName", user.Name);
                 HttpContext.Session.SetString("UserRole", user.Role ?? "User");
+                HttpContext.Session.SetInt32("UserId", user.UserId);
 
                 return user.Role == "Admin"
                     ? RedirectToAction("Index", "Admin")

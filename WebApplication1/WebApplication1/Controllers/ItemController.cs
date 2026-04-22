@@ -138,9 +138,21 @@ namespace WebApplication1.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var item = await _context.Items.FindAsync(id);
+            var item = await _context.Items
+                .Include(i => i.ConsumptionRecords)
+                .Include(i => i.Forecasts)
+                .Include(i => i.InventoryPositions)
+                .Include(i => i.ReplenishmentPlans)
+                .Include(i => i.TransferOrders)
+                .FirstOrDefaultAsync(i => i.ItemId == id);
+
             if (item != null)
             {
+                _context.ConsumptionRecords.RemoveRange(item.ConsumptionRecords);
+                _context.Forecasts.RemoveRange(item.Forecasts);
+                _context.InventoryPositions.RemoveRange(item.InventoryPositions);
+                _context.ReplenishmentPlans.RemoveRange(item.ReplenishmentPlans);
+                _context.TransferOrders.RemoveRange(item.TransferOrders);
                 _context.Items.Remove(item);
             }
 

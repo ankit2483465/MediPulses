@@ -149,9 +149,13 @@ namespace WebApplication1.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var storageZone = await _context.StorageZones.FindAsync(id);
+            var storageZone = await _context.StorageZones
+                .Include(z => z.InventoryPositions)
+                .FirstOrDefaultAsync(z => z.ZoneId == id);
+
             if (storageZone != null)
             {
+                _context.InventoryPositions.RemoveRange(storageZone.InventoryPositions);
                 _context.StorageZones.Remove(storageZone);
             }
 
