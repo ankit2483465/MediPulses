@@ -24,7 +24,8 @@ namespace WebApplication1.Controllers
         // GET: Facilities
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Facilities.ToListAsync());
+            var data = await _context.Facilities.ToListAsync();
+            return View(data);
         }
 
         // GET: Facilities/Details/5
@@ -51,9 +52,6 @@ namespace WebApplication1.Controllers
             return View();
         }
 
-        // POST: Facilities/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("FacilityId,Name,Type,Region")] Facility facility)
@@ -84,9 +82,6 @@ namespace WebApplication1.Controllers
             return View(facility);
         }
 
-        // POST: Facilities/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("FacilityId,Name,Type,Region")] Facility facility)

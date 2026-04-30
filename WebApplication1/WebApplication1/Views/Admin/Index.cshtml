@@ -4,7 +4,7 @@
     var totalUsers    = Model.Count();
     var adminCount    = Model.Count(u => u.Role == "Admin");
     var roleCount     = Model.Where(u => !string.IsNullOrEmpty(u.Role)).Select(u => u.Role).Distinct().Count();
-    var unassigned    = Model.Count(u => string.IsNullOrEmpty(u.Role));
+    var unassigned    = Model.Count(u => string.IsNullOrEmpty(u.Role) || u.Role == "User");
     var currentUserId = Context.Session.GetInt32("UserId");
 }
 
@@ -249,11 +249,13 @@
                 <h1>Admin Dashboard</h1>
                 <p>Manage users, assign roles, and monitor system health across MediPulse.</p>
             </div>
-            <a asp-controller="Account" asp-action="Logout"
-               class="btn btn-sm px-3 py-2 fw-600"
-               style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.35);color:#fca5a5;border-radius:10px;font-size:0.82rem;">
-                <i class="bi bi-box-arrow-right me-1"></i>Logout
-            </a>
+            <div class="d-flex align-items-center gap-3">
+    <div class="d-flex align-items-center gap-2 px-3 py-2" 
+         style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #cbd5e1; font-size: 0.85rem;">
+        <i class="bi bi-calendar3 text-primary"></i>
+        <span>@DateTime.Now.ToString("dddd, MMMM dd yyyy")</span>
+    </div>
+</div>
         </div>
     </div>
 

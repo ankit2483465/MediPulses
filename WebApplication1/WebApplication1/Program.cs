@@ -19,7 +19,7 @@ namespace WebApplication1
 
             builder.Services.AddSession();
 
-            // JWT Authentication — reads token from the JWTToken cookie
+            // JWT Authentication — reads token from the JWTToken cookie 
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

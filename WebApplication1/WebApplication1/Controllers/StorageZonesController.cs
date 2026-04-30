@@ -24,8 +24,8 @@ namespace WebApplication1.Controllers
         // GET: StorageZones
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.StorageZones.Include(s => s.Facility);
-            return View(await applicationDbContext.ToListAsync());
+            var storages = await _context.StorageZones.Include(s => s.Facility).ToListAsync();
+            return View(storages);
         }
 
         // GET: StorageZones/Details/5
