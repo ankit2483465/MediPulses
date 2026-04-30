@@ -1,8 +1,11 @@
 using System.Text;
+using MediPulses.BLL.Interfaces;
+using MediPulses.BLL.Services;
+using MediPulses.DAL.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using WebApplication1.Data;
+using WebApplication1.Filters;
 
 namespace WebApplication1
 {
@@ -12,14 +15,34 @@ namespace WebApplication1
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddScoped<AuditLogActionFilter>();
+            builder.Services.AddControllersWithViews(options =>
+                options.Filters.AddService<AuditLogActionFilter>());
 
+            // DAL — database connection
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddSession();
 
-            // JWT Authentication — reads token from the JWTToken cookie 
+            // BLL — business logic services
+            builder.Services.AddScoped<IAccountService, AccountService>();
+            builder.Services.AddScoped<IAdminService, AdminService>();
+            builder.Services.AddScoped<IHomeService, HomeService>();
+            builder.Services.AddScoped<IItemService, ItemService>();
+            builder.Services.AddScoped<IFacilityService, FacilityService>();
+            builder.Services.AddScoped<IStorageZoneService, StorageZoneService>();
+            builder.Services.AddScoped<ISupplierService, SupplierService>();
+            builder.Services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
+            builder.Services.AddScoped<IReceiptService, ReceiptService>();
+            builder.Services.AddScoped<IInventoryPositionService, InventoryPositionService>();
+            builder.Services.AddScoped<IConsumptionRecordService, ConsumptionRecordService>();
+            builder.Services.AddScoped<ITransferOrderService, TransferOrderService>();
+            builder.Services.AddScoped<ISensorDeviceService, SensorDeviceService>();
+            builder.Services.AddScoped<ITelemetryRecordService, TelemetryRecordService>();
+            builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+
+            // JWT Authentication — reads token from the JWTToken cookie
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -38,7 +61,6 @@ namespace WebApplication1
                     IssuerSigningKey = new SymmetricSecurityKey(
                         Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Secret"]!))
                 };
-                // Read JWT from cookie instead of Authorization header
                 options.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = context =>
@@ -46,14 +68,12 @@ namespace WebApplication1
                         context.Token = context.Request.Cookies["JWTToken"];
                         return Task.CompletedTask;
                     },
-                    // Redirect to login instead of returning 401
                     OnChallenge = context =>
                     {
                         context.HandleResponse();
                         context.Response.Redirect("/Account/Login");
                         return Task.CompletedTask;
                     },
-                    // Redirect to access denied instead of returning 403
                     OnForbidden = context =>
                     {
                         context.Response.Redirect("/Account/AccessDenied");
@@ -74,7 +94,7 @@ namespace WebApplication1
             app.UseRouting();
             app.UseSession();
 
-            app.UseAuthentication();   // must come before UseAuthorization
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapStaticAssets();

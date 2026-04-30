@@ -1,188 +1,115 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using MediPulses.BLL.Interfaces;
+using MediPulses.DAL.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using WebApplication1.Data;
-using WebApplication1.Models;
 
 namespace WebApplication1.Controllers
 {
     [Authorize(Roles = "Admin,Clinical Supply Manager,Nursing / Ward Staff,Pharmacy Manager")]
     public class ConsumptionRecordController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IConsumptionRecordService _consumptionService;
 
-        public ConsumptionRecordController(ApplicationDbContext context)
+        public ConsumptionRecordController(IConsumptionRecordService consumptionService) => _consumptionService = consumptionService;
+
+        public async Task<IActionResult> Index(int page = 1, string search = "")
         {
-            _context = context;
+            const int pageSize = 10;
+            var all = (await _consumptionService.GetAllAsync()).OrderByDescending(x => x.ConsumptionId).ToList();
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = search.ToLower();
+                all = all.Where(x =>
+                    (x.Facility?.Name          ?? "").ToLower().Contains(s) ||
+                    (x.Item?.ItemName          ?? "").ToLower().Contains(s) ||
+                    (x.WardId                  ?? "").ToLower().Contains(s) ||
+                    (x.UsedByNavigation?.Name  ?? "").ToLower().Contains(s)
+                ).ToList();
+            }
+            int totalPages = (int)Math.Ceiling(all.Count / (double)pageSize);
+            page = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages  = totalPages;
+            ViewBag.TotalCount  = all.Count;
+            ViewBag.PageSize    = pageSize;
+            ViewBag.Search      = search;
+            return View(all.Skip((page - 1) * pageSize).Take(pageSize).ToList());
         }
 
-        // GET: ConsumptionRecord
-        public async Task<IActionResult> Index()
-        {
-            var consumptionRecords = await _context.ConsumptionRecords
-                .Include(c => c.Facility)
-                .Include(c => c.Item)
-                .Include(c => c.UsedByNavigation)
-                .OrderByDescending(c => c.Timestamp)
-                .ToListAsync();
-
-            return View(consumptionRecords);
-        }
-
-        // GET: ConsumptionRecord/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var consumptionRecord = await _context.ConsumptionRecords
-                .Include(c => c.Facility)
-                .Include(c => c.Item)
-                .Include(c => c.UsedByNavigation)
-                .FirstOrDefaultAsync(m => m.ConsumptionId == id);
-
-            if (consumptionRecord == null)
-            {
-                return NotFound();
-            }
-
-            return View(consumptionRecord);
+            if (id == null) return NotFound();
+            var record = await _consumptionService.GetByIdAsync(id.Value);
+            return record == null ? NotFound() : View(record);
         }
 
-        // GET: ConsumptionRecord/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["FacilityId"] = new SelectList(_context.Facilities, "FacilityId", "Name");
-            ViewData["ItemId"]     = new SelectList(_context.Items, "ItemId", "ItemName");
-            ViewData["UsedBy"]     = new SelectList(_context.Users, "UserId", "Name");
+            ViewData["FacilityId"] = new SelectList(await _consumptionService.GetFacilitiesAsync(), "FacilityId", "Name");
+            ViewData["ItemId"]     = new SelectList(await _consumptionService.GetItemsAsync(), "ItemId", "ItemName");
+            ViewData["UsedBy"]     = new SelectList(await _consumptionService.GetUsersAsync(), "UserId", "Name");
             return View();
         }
 
-        // POST: ConsumptionRecord/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ConsumptionId,FacilityId,WardId,ItemId,QuantityUsed,UsedBy,Timestamp")] ConsumptionRecord consumptionRecord)
+        public async Task<IActionResult> Create([Bind("ConsumptionId,FacilityId,WardId,ItemId,QuantityUsed,UsedBy,Timestamp")] ConsumptionRecord record)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(consumptionRecord);
-                await _context.SaveChangesAsync();
+                await _consumptionService.CreateAsync(record);
                 TempData["SuccessMessage"] = "Consumption record created successfully.";
                 return RedirectToAction(nameof(Index));
             }
-
-            ViewData["FacilityId"] = new SelectList(_context.Facilities, "FacilityId", "Name", consumptionRecord.FacilityId);
-            ViewData["ItemId"]     = new SelectList(_context.Items, "ItemId", "ItemName", consumptionRecord.ItemId);
-            ViewData["UsedBy"]     = new SelectList(_context.Users, "UserId", "Name", consumptionRecord.UsedBy);
-            return View(consumptionRecord);
+            ViewData["FacilityId"] = new SelectList(await _consumptionService.GetFacilitiesAsync(), "FacilityId", "Name", record.FacilityId);
+            ViewData["ItemId"]     = new SelectList(await _consumptionService.GetItemsAsync(), "ItemId", "ItemName", record.ItemId);
+            ViewData["UsedBy"]     = new SelectList(await _consumptionService.GetUsersAsync(), "UserId", "Name", record.UsedBy);
+            return View(record);
         }
 
-        // GET: ConsumptionRecord/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var consumptionRecord = await _context.ConsumptionRecords.FindAsync(id);
-            if (consumptionRecord == null)
-            {
-                return NotFound();
-            }
-
-            ViewData["FacilityId"] = new SelectList(_context.Facilities, "FacilityId", "Name", consumptionRecord.FacilityId);
-            ViewData["ItemId"]     = new SelectList(_context.Items, "ItemId", "ItemName", consumptionRecord.ItemId);
-            ViewData["UsedBy"]     = new SelectList(_context.Users, "UserId", "Name", consumptionRecord.UsedBy);
-            return View(consumptionRecord);
+            if (id == null) return NotFound();
+            var record = await _consumptionService.GetByIdAsync(id.Value);
+            if (record == null) return NotFound();
+            ViewData["FacilityId"] = new SelectList(await _consumptionService.GetFacilitiesAsync(), "FacilityId", "Name", record.FacilityId);
+            ViewData["ItemId"]     = new SelectList(await _consumptionService.GetItemsAsync(), "ItemId", "ItemName", record.ItemId);
+            ViewData["UsedBy"]     = new SelectList(await _consumptionService.GetUsersAsync(), "UserId", "Name", record.UsedBy);
+            return View(record);
         }
 
-        // POST: ConsumptionRecord/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ConsumptionId,FacilityId,WardId,ItemId,QuantityUsed,UsedBy,Timestamp")] ConsumptionRecord consumptionRecord)
+        public async Task<IActionResult> Edit(int id, [Bind("ConsumptionId,FacilityId,WardId,ItemId,QuantityUsed,UsedBy,Timestamp")] ConsumptionRecord record)
         {
-            if (id != consumptionRecord.ConsumptionId)
-            {
-                return NotFound();
-            }
-
+            if (id != record.ConsumptionId) return NotFound();
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(consumptionRecord);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ConsumptionRecordExists(consumptionRecord.ConsumptionId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                if (!await _consumptionService.UpdateAsync(record)) return NotFound();
                 TempData["SuccessUpdate"] = "Consumption record updated successfully.";
                 return RedirectToAction(nameof(Index));
             }
-
-            ViewData["FacilityId"] = new SelectList(_context.Facilities, "FacilityId", "Name", consumptionRecord.FacilityId);
-            ViewData["ItemId"]     = new SelectList(_context.Items, "ItemId", "ItemName", consumptionRecord.ItemId);
-            ViewData["UsedBy"]     = new SelectList(_context.Users, "UserId", "Name", consumptionRecord.UsedBy);
-            return View(consumptionRecord);
+            ViewData["FacilityId"] = new SelectList(await _consumptionService.GetFacilitiesAsync(), "FacilityId", "Name", record.FacilityId);
+            ViewData["ItemId"]     = new SelectList(await _consumptionService.GetItemsAsync(), "ItemId", "ItemName", record.ItemId);
+            ViewData["UsedBy"]     = new SelectList(await _consumptionService.GetUsersAsync(), "UserId", "Name", record.UsedBy);
+            return View(record);
         }
 
-        // GET: ConsumptionRecord/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var consumptionRecord = await _context.ConsumptionRecords
-                .Include(c => c.Facility)
-                .Include(c => c.Item)
-                .Include(c => c.UsedByNavigation)
-                .FirstOrDefaultAsync(m => m.ConsumptionId == id);
-
-            if (consumptionRecord == null)
-            {
-                return NotFound();
-            }
-
-            return View(consumptionRecord);
+            if (id == null) return NotFound();
+            var record = await _consumptionService.GetByIdAsync(id.Value);
+            return record == null ? NotFound() : View(record);
         }
 
-        // POST: ConsumptionRecord/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var consumptionRecord = await _context.ConsumptionRecords.FindAsync(id);
-            if (consumptionRecord != null)
-            {
-                _context.ConsumptionRecords.Remove(consumptionRecord);
-            }
-
-            await _context.SaveChangesAsync();
+            await _consumptionService.DeleteAsync(id);
             TempData["SuccessDelete"] = "Consumption record deleted successfully.";
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool ConsumptionRecordExists(int id)
-        {
-            return _context.ConsumptionRecords.Any(e => e.ConsumptionId == id);
         }
     }
 }

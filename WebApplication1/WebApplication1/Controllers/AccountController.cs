@@ -1,23 +1,21 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using BCrypt.Net;
+using MediPulses.BLL.Interfaces;
+using MediPulses.DAL.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using WebApplication1.Data;
-using WebApplication1.Models;
 
 namespace WebApplication1.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly ApplicationDbContext _db;
+        private readonly IAccountService _accountService;
         private readonly IConfiguration _config;
 
-        public AccountController(ApplicationDbContext db, IConfiguration config)
+        public AccountController(IAccountService accountService, IConfiguration config)
         {
-            _db = db;
+            _accountService = accountService;
             _config = config;
         }
 
@@ -29,20 +27,13 @@ namespace WebApplication1.Controllers
         {
             if (!ModelState.IsValid) return View(user);
 
-            // 1. Check if user exists
-            if (await _db.Users.AnyAsync(u => u.Email == user.Email))
+            if (await _accountService.EmailExistsAsync(user.Email))
             {
                 ModelState.AddModelError("Email", "Email already in use.");
                 return View(user);
             }
 
-            // 2. Hash the password before saving
-            user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-            user.Role = "User";
-
-            _db.Users.Add(user);
-            await _db.SaveChangesAsync();
-
+            await _accountService.CreateUserAsync(user);
             return RedirectToAction("Login");
         }
 
@@ -52,32 +43,9 @@ namespace WebApplication1.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(string email, string password)
         {
-            // 3. Find user by email first
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
+            var user = await _accountService.AuthenticateAsync(email, password);
 
-            // 4. Verify password — support both BCrypt-hashed and legacy plain-text passwords
-            bool passwordValid = false;
             if (user != null)
-            {
-                bool isBcryptHash = user.Password != null && user.Password.StartsWith("$2");
-                if (isBcryptHash)
-                {
-                    try { passwordValid = BCrypt.Net.BCrypt.Verify(password, user.Password); }
-                    catch { passwordValid = false; }
-                }
-                else
-                {
-                    // Legacy plain-text: compare directly, then upgrade to BCrypt
-                    passwordValid = user.Password == password;
-                    if (passwordValid)
-                    {
-                        user.Password = BCrypt.Net.BCrypt.HashPassword(password);
-                        await _db.SaveChangesAsync();
-                    }
-                }
-            }
-
-            if (passwordValid && user != null)
             {
                 var tokenString = GenerateJwtToken(user);
 
@@ -89,7 +57,6 @@ namespace WebApplication1.Controllers
                     Expires = DateTimeOffset.UtcNow.AddHours(2)
                 });
 
-                // Write to session so HomeController can read the user name
                 HttpContext.Session.SetString("UserName", user.Name);
                 HttpContext.Session.SetString("UserRole", user.Role ?? "User");
                 HttpContext.Session.SetInt32("UserId", user.UserId);
@@ -106,8 +73,7 @@ namespace WebApplication1.Controllers
         private string GenerateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            // 5. Pull secret from configuration
-            var key = Encoding.ASCII.GetBytes(_config["Jwt:Secret"]);
+            var key = Encoding.ASCII.GetBytes(_config["Jwt:Secret"]!);
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {

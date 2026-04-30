@@ -1,168 +1,91 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using MediPulses.BLL.Interfaces;
+using MediPulses.DAL.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using WebApplication1.Data;
-using WebApplication1.Models;
 
 namespace WebApplication1.Controllers
 {
     [Authorize(Roles = "Admin,Cold Chain Operator")]
     public class SensorDeviceController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ISensorDeviceService _sensorService;
 
-        public SensorDeviceController(ApplicationDbContext context)
+        public SensorDeviceController(ISensorDeviceService sensorService) => _sensorService = sensorService;
+
+        public async Task<IActionResult> Index(int page = 1, string search = "")
         {
-            _context = context;
+            const int pageSize = 10;
+            var all = (await _sensorService.GetAllAsync()).OrderByDescending(x => x.SensorId).ToList();
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = search.ToLower();
+                all = all.Where(x =>
+                    (x.DeviceType  ?? "").ToLower().Contains(s) ||
+                    (x.AssignedTo  ?? "").ToLower().Contains(s) ||
+                    (x.Status      ?? "").ToLower().Contains(s)
+                ).ToList();
+            }
+            int totalPages = (int)Math.Ceiling(all.Count / (double)pageSize);
+            page = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages  = totalPages;
+            ViewBag.TotalCount  = all.Count;
+            ViewBag.PageSize    = pageSize;
+            ViewBag.Search      = search;
+            return View(all.Skip((page - 1) * pageSize).Take(pageSize).ToList());
         }
 
-        // GET: SensorDevice
-        public async Task<IActionResult> Index()
-        {
-            var devices = await _context.SensorDevices
-                .Include(s => s.TelemetryRecords)
-                .ToListAsync();
-            return View(devices);
-        }
-
-        // GET: SensorDevice/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var sensorDevice = await _context.SensorDevices
-                .Include(s => s.TelemetryRecords)
-                .FirstOrDefaultAsync(m => m.SensorId == id);
-
-            if (sensorDevice == null)
-            {
-                return NotFound();
-            }
-
-            return View(sensorDevice);
+            if (id == null) return NotFound();
+            var device = await _sensorService.GetByIdAsync(id.Value);
+            return device == null ? NotFound() : View(device);
         }
 
-        // GET: SensorDevice/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
+        public IActionResult Create() => View();
 
-        // POST: SensorDevice/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("SensorId,DeviceType,AssignedTo,Status")] SensorDevice sensorDevice)
+        public async Task<IActionResult> Create([Bind("SensorId,DeviceType,AssignedTo,Status")] SensorDevice device)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(sensorDevice);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Sensor device created successfully.";
-                return RedirectToAction(nameof(Index));
-            }
-            return View(sensorDevice);
+            if (!ModelState.IsValid) return View(device);
+            await _sensorService.CreateAsync(device);
+            TempData["SuccessMessage"] = "Sensor device created successfully.";
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: SensorDevice/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var sensorDevice = await _context.SensorDevices.FindAsync(id);
-            if (sensorDevice == null)
-            {
-                return NotFound();
-            }
-            return View(sensorDevice);
+            if (id == null) return NotFound();
+            var device = await _sensorService.GetByIdAsync(id.Value);
+            return device == null ? NotFound() : View(device);
         }
 
-        // POST: SensorDevice/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("SensorId,DeviceType,AssignedTo,Status")] SensorDevice sensorDevice)
+        public async Task<IActionResult> Edit(int id, [Bind("SensorId,DeviceType,AssignedTo,Status")] SensorDevice device)
         {
-            if (id != sensorDevice.SensorId)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(sensorDevice);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!SensorDeviceExists(sensorDevice.SensorId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                TempData["SuccessUpdate"] = "Sensor device updated successfully.";
-                return RedirectToAction(nameof(Index));
-            }
-            return View(sensorDevice);
+            if (id != device.SensorId) return NotFound();
+            if (!ModelState.IsValid) return View(device);
+            if (!await _sensorService.UpdateAsync(device)) return NotFound();
+            TempData["SuccessUpdate"] = "Sensor device updated successfully.";
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: SensorDevice/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var sensorDevice = await _context.SensorDevices
-                .Include(s => s.TelemetryRecords)
-                .FirstOrDefaultAsync(m => m.SensorId == id);
-
-            if (sensorDevice == null)
-            {
-                return NotFound();
-            }
-
-            return View(sensorDevice);
+            if (id == null) return NotFound();
+            var device = await _sensorService.GetByIdAsync(id.Value);
+            return device == null ? NotFound() : View(device);
         }
 
-        // POST: SensorDevice/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var sensorDevice = await _context.SensorDevices
-                .Include(s => s.TelemetryRecords)
-                .FirstOrDefaultAsync(s => s.SensorId == id);
-
-            if (sensorDevice != null)
-            {
-                _context.TelemetryRecords.RemoveRange(sensorDevice.TelemetryRecords);
-                _context.SensorDevices.Remove(sensorDevice);
-            }
-
-            await _context.SaveChangesAsync();
+            await _sensorService.DeleteAsync(id);
             TempData["SuccessDelete"] = "Sensor device deleted successfully.";
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool SensorDeviceExists(int id)
-        {
-            return _context.SensorDevices.Any(e => e.SensorId == id);
         }
     }
 }

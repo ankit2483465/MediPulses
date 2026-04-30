@@ -1,144 +1,89 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using MediPulses.BLL.Interfaces;
+using MediPulses.DAL.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using WebApplication1.Data;
-using WebApplication1.Models;
-
-
 
 namespace WebApplication1.Controllers
 {
     [Authorize(Roles = "Admin,Procurement Officer,Pharmacy Manager,Compliance Officer")]
     public class SupplierController : Controller
     {
-        private readonly ApplicationDbContext supplierDb;
+        private readonly ISupplierService _supplierService;
 
-        public SupplierController(ApplicationDbContext SupplierDb)
-        {
-            supplierDb = SupplierDb;
-        }
+        public SupplierController(ISupplierService supplierService) => _supplierService = supplierService;
 
-        //All list of suppliers
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1, string search = "")
         {
-            if (supplierDb == null)
+            const int pageSize = 10;
+            var all = (await _supplierService.GetAllAsync()).OrderByDescending(x => x.SupplierId).ToList();
+            if (!string.IsNullOrWhiteSpace(search))
             {
-                return StatusCode(500, "Database context is not initialized. Check database connection and SQL Server availability.");
+                var s = search.ToLower();
+                all = all.Where(x =>
+                    (x.Name         ?? "").ToLower().Contains(s) ||
+                    (x.SupplierType ?? "").ToLower().Contains(s) ||
+                    (x.Status       ?? "").ToLower().Contains(s)
+                ).ToList();
             }
-
-            var SupplierData = await supplierDb.Suppliers.ToListAsync();
-            return View(SupplierData);
+            int totalPages = (int)Math.Ceiling(all.Count / (double)pageSize);
+            page = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages  = totalPages;
+            ViewBag.TotalCount  = all.Count;
+            ViewBag.PageSize    = pageSize;
+            ViewBag.Search      = search;
+            return View(all.Skip((page - 1) * pageSize).Take(pageSize).ToList());
         }
 
-        //Create new supplier
-
-        public IActionResult Create()
+        public async Task<IActionResult> Details(int? id)
         {
-            return View();
+            if (id == null) return NotFound();
+            var supplier = await _supplierService.GetByIdAsync(id.Value);
+            return supplier == null ? NotFound() : View(supplier);
         }
+
+        public IActionResult Create() => View();
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Supplier sp)
         {
-            if (ModelState.IsValid)
-            {
-                await supplierDb.Suppliers.AddAsync(sp);
-                await supplierDb.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Supplier created.";
-                return RedirectToAction("Index", "Supplier");
-            }
-            return View(sp);
+            if (!ModelState.IsValid) return View(sp);
+            await _supplierService.CreateAsync(sp);
+            TempData["SuccessMessage"] = "Supplier created.";
+            return RedirectToAction("Index", "Supplier");
         }
 
-        //Details of supplier
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null || supplierDb.Suppliers == null)
-            {
-                return NotFound();
-            }
-
-            var SupplierData = await supplierDb.Suppliers.FirstOrDefaultAsync(x => x.SupplierId == id);
-
-            if (SupplierData == null)
-            {
-                return NotFound();
-            }
-            return View(SupplierData);
-
-        }
-
-        //Edit supplier
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || supplierDb.Suppliers == null)
-            {
-                return NotFound();
-            }
-            var SupplierData = await supplierDb.Suppliers.FindAsync(id);
-
-            if (SupplierData == null)
-            {
-                return NotFound();
-            }
-            return View(SupplierData);
-
+            if (id == null) return NotFound();
+            var supplier = await _supplierService.GetByIdAsync(id.Value);
+            return supplier == null ? NotFound() : View(supplier);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int? id, Supplier sp)
         {
-            if (id != sp.SupplierId)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                supplierDb.Suppliers.Update(sp);
-                await supplierDb.SaveChangesAsync();
-                TempData["SuccessUpdate"] = "Supplier Updated.";
-                return RedirectToAction("Index", "Supplier");
-            }
-
-            return View(sp);
+            if (id != sp.SupplierId) return NotFound();
+            if (!ModelState.IsValid) return View(sp);
+            await _supplierService.UpdateAsync(sp);
+            TempData["SuccessUpdate"] = "Supplier Updated.";
+            return RedirectToAction("Index", "Supplier");
         }
-
-        //Delete supplier
 
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || supplierDb.Suppliers == null)
-            {
-                return NotFound();
-            }
-            var SupplierData = await supplierDb.Suppliers.FirstOrDefaultAsync(x => x.SupplierId == id);
-
-            if (SupplierData == null)
-            {
-                return NotFound();
-            }
-            return View(SupplierData);
+            if (id == null) return NotFound();
+            var supplier = await _supplierService.GetByIdAsync(id.Value);
+            return supplier == null ? NotFound() : View(supplier);
         }
 
-        [HttpPost , ActionName("Delete")]
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirm(int? id)
         {
-            var SupplierData = await supplierDb.Suppliers
-                .Include(s => s.PurchaseOrders).ThenInclude(po => po.Receipts)
-                .FirstOrDefaultAsync(s => s.SupplierId == id);
-
-            if (SupplierData != null)
-            {
-                foreach (var po in SupplierData.PurchaseOrders)
-                    supplierDb.Receipts.RemoveRange(po.Receipts);
-                supplierDb.PurchaseOrders.RemoveRange(SupplierData.PurchaseOrders);
-                supplierDb.Suppliers.Remove(SupplierData);
-            }
-            await supplierDb.SaveChangesAsync();
+            if (id.HasValue) await _supplierService.DeleteAsync(id.Value);
             TempData["SuccessDelete"] = "Supplier Deleted.";
             return RedirectToAction("Index", "Supplier");
         }

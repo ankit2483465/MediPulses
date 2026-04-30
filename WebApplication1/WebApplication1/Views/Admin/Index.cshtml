@@ -1,10 +1,14 @@
-﻿@model IEnumerable<WebApplication1.Models.User>
+﻿@model IEnumerable<MediPulses.DAL.Entities.User>
 
 @{
-    var totalUsers    = Model.Count();
-    var adminCount    = Model.Count(u => u.Role == "Admin");
-    var roleCount     = Model.Where(u => !string.IsNullOrEmpty(u.Role)).Select(u => u.Role).Distinct().Count();
-    var unassigned    = Model.Count(u => string.IsNullOrEmpty(u.Role) || u.Role == "User");
+    int totalUsers    = ViewBag.TotalCount;
+    int adminCount    = ViewBag.AdminCount;
+    int roleCount     = ViewBag.RoleCount;
+    int unassigned    = ViewBag.Unassigned;
+    int currentPage   = ViewBag.CurrentPage;
+    int totalPages    = ViewBag.TotalPages;
+    int pageSize      = ViewBag.PageSize;
+    var allUsers      = (List<MediPulses.DAL.Entities.User>)ViewBag.AllUsers;
     var currentUserId = Context.Session.GetInt32("UserId");
 }
 
@@ -323,7 +327,7 @@
                 </div>
                 <div class="p-3 d-flex flex-column gap-2">
                     @{
-                        var roleDist = Model
+                        var roleDist = allUsers
                             .GroupBy(u => string.IsNullOrEmpty(u.Role) ? "Unassigned" : u.Role)
                             .OrderByDescending(g => g.Count());
                     }
@@ -349,7 +353,7 @@
                     <div class="d-flex align-items-center gap-2">
                         <i class="bi bi-people text-primary"></i>
                         <span class="fw-700" style="font-size:0.875rem;">User Management</span>
-                        <span class="badge rounded-pill" style="background:#e0e7ff;color:#3730a3;font-size:0.7rem;">@totalUsers</span>
+                        <span class="badge rounded-pill" style="background:#e0e7ff;color:#3730a3;font-size:0.7rem;">@totalUsers total</span>
                     </div>
                     <input type="text" id="userSearch" placeholder="Search users..." />
                 </div>
@@ -419,13 +423,9 @@
                                             }
                                             else
                                             {
-                                                <form asp-action="Delete" asp-route-id="@user.UserId" method="post"
-                                                      onsubmit="return confirm('Delete @Html.Raw(user.Name?.Replace("'","\'"))? This cannot be undone.');">
-                                                    @Html.AntiForgeryToken()
-                                                    <button type="submit" class="btn-del">
-                                                        <i class="bi bi-trash3-fill"></i> Delete
-                                                    </button>
-                                                </form>
+                                                <a asp-action="Delete" asp-route-id="@user.UserId" class="btn-del">
+                                                    <i class="bi bi-trash3-fill"></i> Delete
+                                                </a>
                                             }
                                         </div>
                                     </td>
@@ -443,6 +443,84 @@
                         </tbody>
                     </table>
                 </div>
+
+                @* ── Pagination ── *@
+                @if (totalPages > 1)
+                {
+                    int from = (currentPage - 1) * pageSize + 1;
+                    int to   = Math.Min(currentPage * pageSize, totalUsers);
+
+                    <div class="d-flex justify-content-between align-items-center px-4 py-3"
+                         style="border-top:1px solid #e9ecef; background:#fafbfc;">
+                        <small class="text-muted">
+                            Showing <strong>@from</strong>–<strong>@to</strong> of <strong>@totalUsers</strong> users
+                        </small>
+                        <nav aria-label="User pagination">
+                            <ul class="pagination pagination-sm mb-0 gap-1">
+
+                                @* Previous *@
+                                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                    <a class="page-link rounded-2" asp-action="Index" asp-route-page="@(currentPage - 1)"
+                                       style="border-color:#e2e8f0;">
+                                        <i class="bi bi-chevron-left" style="font-size:0.7rem;"></i>
+                                    </a>
+                                </li>
+
+                                @* Page numbers — show window of 5 around current page *@
+                                @{
+                                    int winStart = Math.Max(1, currentPage - 2);
+                                    int winEnd   = Math.Min(totalPages, winStart + 4);
+                                    winStart     = Math.Max(1, winEnd - 4);
+                                }
+                                @if (winStart > 1)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link rounded-2" asp-action="Index" asp-route-page="1"
+                                           style="border-color:#e2e8f0;">1</a>
+                                    </li>
+                                    @if (winStart > 2)
+                                    {
+                                        <li class="page-item disabled">
+                                            <span class="page-link border-0 bg-transparent text-muted px-1">…</span>
+                                        </li>
+                                    }
+                                }
+                                @for (int p = winStart; p <= winEnd; p++)
+                                {
+                                    <li class="page-item @(p == currentPage ? "active" : "")">
+                                        <a class="page-link rounded-2" asp-action="Index" asp-route-page="@p"
+                                           style="@(p == currentPage ? "background:#6366f1;border-color:#6366f1;" : "border-color:#e2e8f0;")">
+                                            @p
+                                        </a>
+                                    </li>
+                                }
+                                @if (winEnd < totalPages)
+                                {
+                                    @if (winEnd < totalPages - 1)
+                                    {
+                                        <li class="page-item disabled">
+                                            <span class="page-link border-0 bg-transparent text-muted px-1">…</span>
+                                        </li>
+                                    }
+                                    <li class="page-item">
+                                        <a class="page-link rounded-2" asp-action="Index" asp-route-page="@totalPages"
+                                           style="border-color:#e2e8f0;">@totalPages</a>
+                                    </li>
+                                }
+
+                                @* Next *@
+                                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                    <a class="page-link rounded-2" asp-action="Index" asp-route-page="@(currentPage + 1)"
+                                       style="border-color:#e2e8f0;">
+                                        <i class="bi bi-chevron-right" style="font-size:0.7rem;"></i>
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </nav>
+                    </div>
+                }
+
             </div>
         </div>
     </div>

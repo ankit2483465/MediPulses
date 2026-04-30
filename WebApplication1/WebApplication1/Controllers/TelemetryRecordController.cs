@@ -1,178 +1,121 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using MediPulses.BLL.Interfaces;
+using MediPulses.DAL.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using WebApplication1.Data;
-using WebApplication1.Models;
 
 namespace WebApplication1.Controllers
 {
     [Authorize(Roles = "Admin,Cold Chain Operator,Compliance Officer")]
     public class TelemetryRecordController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ITelemetryRecordService _telemetryService;
 
-        public TelemetryRecordController(ApplicationDbContext context)
+        public TelemetryRecordController(ITelemetryRecordService telemetryService) => _telemetryService = telemetryService;
+
+        public async Task<IActionResult> Index(int page = 1, string search = "")
         {
-            _context = context;
+            const int pageSize = 10;
+            var all = (await _telemetryService.GetAllAsync()).OrderByDescending(x => x.TelemetryId).ToList();
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = search.ToLower();
+                all = all.Where(x =>
+                    (x.SensorId.HasValue ? x.SensorId.Value.ToString() : "").Contains(s) ||
+                    (x.Location          ?? "").ToLower().Contains(s) ||
+                    (x.Sensor?.DeviceType ?? "").ToLower().Contains(s)
+                ).ToList();
+            }
+            int totalPages = (int)Math.Ceiling(all.Count / (double)pageSize);
+            page = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
+            ViewBag.CurrentPage   = page;
+            ViewBag.TotalPages    = totalPages;
+            ViewBag.TotalCount    = all.Count;
+            ViewBag.PageSize      = pageSize;
+            ViewBag.Search        = search;
+            ViewBag.ExcursionCount = all.Count(t => t.Temperature.HasValue && t.Temperature > 8);
+            ViewBag.WarningCount   = all.Count(t => t.Temperature.HasValue && t.Temperature > 5 && t.Temperature <= 8);
+            ViewBag.ActiveSensors  = all.Select(t => t.SensorId).Distinct().Count();
+            return View(all.Skip((page - 1) * pageSize).Take(pageSize).ToList());
         }
 
-        // GET: TelemetryRecord
-        public async Task<IActionResult> Index()
-        {
-            var records = await _context.TelemetryRecords
-                .Include(t => t.Sensor)
-                .OrderByDescending(t => t.Timestamp)
-                .ToListAsync();
-            return View(records);
-        }
-
-        // GET: TelemetryRecord/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var telemetryRecord = await _context.TelemetryRecords
-                .Include(t => t.Sensor)
-                .FirstOrDefaultAsync(m => m.TelemetryId == id);
-
-            if (telemetryRecord == null)
-            {
-                return NotFound();
-            }
-
-            return View(telemetryRecord);
+            if (id == null) return NotFound();
+            var record = await _telemetryService.GetByIdAsync(id.Value);
+            return record == null ? NotFound() : View(record);
         }
 
-        // GET: TelemetryRecord/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
             ViewData["SensorId"] = new SelectList(
-                _context.SensorDevices.Select(s => new { s.SensorId, Display = "Sensor #" + s.SensorId + " (" + s.DeviceType + ")" }),
+                (await _telemetryService.GetSensorDevicesAsync())
+                    .Select(s => new { s.SensorId, Display = $"Sensor #{s.SensorId} ({s.DeviceType})" }),
                 "SensorId", "Display");
             return View();
         }
 
-        // POST: TelemetryRecord/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("TelemetryId,SensorId,Timestamp,Temperature,Humidity,Location")] TelemetryRecord telemetryRecord)
+        public async Task<IActionResult> Create([Bind("TelemetryId,SensorId,Timestamp,Temperature,Humidity,Location")] TelemetryRecord record)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(telemetryRecord);
-                await _context.SaveChangesAsync();
+                await _telemetryService.CreateAsync(record);
                 TempData["SuccessMessage"] = "Telemetry record created successfully.";
                 return RedirectToAction(nameof(Index));
             }
             ViewData["SensorId"] = new SelectList(
-                _context.SensorDevices.Select(s => new { s.SensorId, Display = "Sensor #" + s.SensorId + " (" + s.DeviceType + ")" }),
-                "SensorId", "Display", telemetryRecord.SensorId);
-            return View(telemetryRecord);
+                (await _telemetryService.GetSensorDevicesAsync())
+                    .Select(s => new { s.SensorId, Display = $"Sensor #{s.SensorId} ({s.DeviceType})" }),
+                "SensorId", "Display", record.SensorId);
+            return View(record);
         }
 
-        // GET: TelemetryRecord/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var telemetryRecord = await _context.TelemetryRecords.FindAsync(id);
-            if (telemetryRecord == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
+            var record = await _telemetryService.GetByIdAsync(id.Value);
+            if (record == null) return NotFound();
             ViewData["SensorId"] = new SelectList(
-                _context.SensorDevices.Select(s => new { s.SensorId, Display = "Sensor #" + s.SensorId + " (" + s.DeviceType + ")" }),
-                "SensorId", "Display", telemetryRecord.SensorId);
-            return View(telemetryRecord);
+                (await _telemetryService.GetSensorDevicesAsync())
+                    .Select(s => new { s.SensorId, Display = $"Sensor #{s.SensorId} ({s.DeviceType})" }),
+                "SensorId", "Display", record.SensorId);
+            return View(record);
         }
 
-        // POST: TelemetryRecord/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("TelemetryId,SensorId,Timestamp,Temperature,Humidity,Location")] TelemetryRecord telemetryRecord)
+        public async Task<IActionResult> Edit(int id, [Bind("TelemetryId,SensorId,Timestamp,Temperature,Humidity,Location")] TelemetryRecord record)
         {
-            if (id != telemetryRecord.TelemetryId)
-            {
-                return NotFound();
-            }
-
+            if (id != record.TelemetryId) return NotFound();
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(telemetryRecord);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!TelemetryRecordExists(telemetryRecord.TelemetryId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                if (!await _telemetryService.UpdateAsync(record)) return NotFound();
                 TempData["SuccessUpdate"] = "Telemetry record updated successfully.";
                 return RedirectToAction(nameof(Index));
             }
             ViewData["SensorId"] = new SelectList(
-                _context.SensorDevices.Select(s => new { s.SensorId, Display = "Sensor #" + s.SensorId + " (" + s.DeviceType + ")" }),
-                "SensorId", "Display", telemetryRecord.SensorId);
-            return View(telemetryRecord);
+                (await _telemetryService.GetSensorDevicesAsync())
+                    .Select(s => new { s.SensorId, Display = $"Sensor #{s.SensorId} ({s.DeviceType})" }),
+                "SensorId", "Display", record.SensorId);
+            return View(record);
         }
 
-        // GET: TelemetryRecord/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var telemetryRecord = await _context.TelemetryRecords
-                .Include(t => t.Sensor)
-                .FirstOrDefaultAsync(m => m.TelemetryId == id);
-
-            if (telemetryRecord == null)
-            {
-                return NotFound();
-            }
-
-            return View(telemetryRecord);
+            if (id == null) return NotFound();
+            var record = await _telemetryService.GetByIdAsync(id.Value);
+            return record == null ? NotFound() : View(record);
         }
 
-        // POST: TelemetryRecord/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var telemetryRecord = await _context.TelemetryRecords.FindAsync(id);
-            if (telemetryRecord != null)
-            {
-                _context.TelemetryRecords.Remove(telemetryRecord);
-            }
-
-            await _context.SaveChangesAsync();
+            await _telemetryService.DeleteAsync(id);
             TempData["SuccessDelete"] = "Telemetry record deleted successfully.";
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool TelemetryRecordExists(int id)
-        {
-            return _context.TelemetryRecords.Any(e => e.TelemetryId == id);
         }
     }
 }

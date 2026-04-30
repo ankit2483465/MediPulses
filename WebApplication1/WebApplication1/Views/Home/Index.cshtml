@@ -234,7 +234,7 @@
                             <a asp-controller="PurchaseOrder" asp-action="Index" class="btn btn-sm btn-outline-primary">View All</a>
                         </div>
                         @{
-                            var recentPOs = ViewBag.RecentPOs as IEnumerable<WebApplication1.Models.PurchaseOrder>;
+                            var recentPOs = ViewBag.RecentPOs as IEnumerable<MediPulses.DAL.Entities.PurchaseOrder>;
                         }
                         @if (recentPOs != null && recentPOs.Any())
                         {
@@ -290,7 +290,7 @@
                             <a asp-controller="TransferOrder" asp-action="Index" class="btn btn-sm btn-outline-warning">View All</a>
                         </div>
                         @{
-                            var recentTransfers = ViewBag.RecentTransfers as IEnumerable<WebApplication1.Models.TransferOrder>;
+                            var recentTransfers = ViewBag.RecentTransfers as IEnumerable<MediPulses.DAL.Entities.TransferOrder>;
                         }
                         @if (recentTransfers != null && recentTransfers.Any())
                         {

@@ -1,172 +1,106 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using MediPulses.BLL.Interfaces;
+using MediPulses.DAL.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using WebApplication1.Data;
-using WebApplication1.Models;
 
 namespace WebApplication1.Controllers
 {
     [Authorize(Roles = "Admin,Clinical Supply Manager,Cold Chain Operator,Compliance Officer")]
     public class StorageZonesController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IStorageZoneService _storageZoneService;
 
-        public StorageZonesController(ApplicationDbContext context)
+        public StorageZonesController(IStorageZoneService storageZoneService) => _storageZoneService = storageZoneService;
+
+        public async Task<IActionResult> Index(int page = 1, string search = "")
         {
-            _context = context;
+            const int pageSize = 10;
+            var all = (await _storageZoneService.GetAllAsync()).OrderByDescending(x => x.ZoneId).ToList();
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = search.ToLower();
+                all = all.Where(x =>
+                    (x.Name               ?? "").ToLower().Contains(s) ||
+                    (x.TemperatureProfile ?? "").ToLower().Contains(s) ||
+                    (x.Facility?.Name     ?? "").ToLower().Contains(s)
+                ).ToList();
+            }
+            int totalPages = (int)Math.Ceiling(all.Count / (double)pageSize);
+            page = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages  = totalPages;
+            ViewBag.TotalCount  = all.Count;
+            ViewBag.PageSize    = pageSize;
+            ViewBag.Search      = search;
+            return View(all.Skip((page - 1) * pageSize).Take(pageSize).ToList());
         }
 
-        // GET: StorageZones
-        public async Task<IActionResult> Index()
-        {
-            var storages = await _context.StorageZones.Include(s => s.Facility).ToListAsync();
-            return View(storages);
-        }
-
-        // GET: StorageZones/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var storageZone = await _context.StorageZones
-                .Include(s => s.Facility)
-                .FirstOrDefaultAsync(m => m.ZoneId == id);
-            if (storageZone == null)
-            {
-                return NotFound();
-            }
-
-            return View(storageZone);
+            if (id == null) return NotFound();
+            var zone = await _storageZoneService.GetByIdAsync(id.Value);
+            return zone == null ? NotFound() : View(zone);
         }
 
-        // GET: StorageZones/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["FacilityId"] = new SelectList(_context.Facilities, "FacilityId", "Name");
+            ViewData["FacilityId"] = new SelectList(await _storageZoneService.GetFacilitiesAsync(), "FacilityId", "Name");
             return View();
         }
 
-        // POST: StorageZones/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ZoneId,FacilityId,Name,TemperatureProfile,Capacity")] StorageZone storageZone)
+        public async Task<IActionResult> Create([Bind("ZoneId,FacilityId,Name,TemperatureProfile,Capacity")] StorageZone zone)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(storageZone);
-                await _context.SaveChangesAsync();
+                await _storageZoneService.CreateAsync(zone);
                 TempData["SuccessMessage"] = "Storage zone created successfully.";
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["FacilityId"] = new SelectList(_context.Facilities, "FacilityId", "Name", storageZone.FacilityId);
-            return View(storageZone);
+            ViewData["FacilityId"] = new SelectList(await _storageZoneService.GetFacilitiesAsync(), "FacilityId", "Name", zone.FacilityId);
+            return View(zone);
         }
 
-        // GET: StorageZones/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var storageZone = await _context.StorageZones.FindAsync(id);
-            if (storageZone == null)
-            {
-                return NotFound();
-            }
-            ViewData["FacilityId"] = new SelectList(_context.Facilities, "FacilityId", "Name", storageZone.FacilityId);
-            return View(storageZone);
+            if (id == null) return NotFound();
+            var zone = await _storageZoneService.GetByIdAsync(id.Value);
+            if (zone == null) return NotFound();
+            ViewData["FacilityId"] = new SelectList(await _storageZoneService.GetFacilitiesAsync(), "FacilityId", "Name", zone.FacilityId);
+            return View(zone);
         }
 
-        // POST: StorageZones/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ZoneId,FacilityId,Name,TemperatureProfile,Capacity")] StorageZone storageZone)
+        public async Task<IActionResult> Edit(int id, [Bind("ZoneId,FacilityId,Name,TemperatureProfile,Capacity")] StorageZone zone)
         {
-            if (id != storageZone.ZoneId)
-            {
-                return NotFound();
-            }
-
+            if (id != zone.ZoneId) return NotFound();
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(storageZone);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!StorageZoneExists(storageZone.ZoneId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                if (!await _storageZoneService.UpdateAsync(zone)) return NotFound();
                 TempData["SuccessUpdate"] = "Storage zone updated successfully.";
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["FacilityId"] = new SelectList(_context.Facilities, "FacilityId", "Name", storageZone.FacilityId);
-            return View(storageZone);
+            ViewData["FacilityId"] = new SelectList(await _storageZoneService.GetFacilitiesAsync(), "FacilityId", "Name", zone.FacilityId);
+            return View(zone);
         }
 
-        // GET: StorageZones/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var storageZone = await _context.StorageZones
-                .Include(s => s.Facility)
-                .FirstOrDefaultAsync(m => m.ZoneId == id);
-            if (storageZone == null)
-            {
-                return NotFound();
-            }
-
-            return View(storageZone);
+            if (id == null) return NotFound();
+            var zone = await _storageZoneService.GetByIdAsync(id.Value);
+            return zone == null ? NotFound() : View(zone);
         }
 
-        // POST: StorageZones/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var storageZone = await _context.StorageZones
-                .Include(z => z.InventoryPositions)
-                .FirstOrDefaultAsync(z => z.ZoneId == id);
-
-            if (storageZone != null)
-            {
-                _context.InventoryPositions.RemoveRange(storageZone.InventoryPositions);
-                _context.StorageZones.Remove(storageZone);
-            }
-
-            await _context.SaveChangesAsync();
+            await _storageZoneService.DeleteAsync(id);
             TempData["SuccessDelete"] = "Storage zone deleted successfully.";
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool StorageZoneExists(int id)
-        {
-            return _context.StorageZones.Any(e => e.ZoneId == id);
         }
     }
 }

@@ -1,169 +1,92 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using MediPulses.BLL.Interfaces;
+using MediPulses.DAL.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using WebApplication1.Data;
-using WebApplication1.Models;
 
 namespace WebApplication1.Controllers
 {
     [Authorize(Roles = "Admin,Clinical Supply Manager,Pharmacy Manager,Biomedical Engineer / Device Manager,Compliance Officer")]
     public class ItemController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IItemService _itemService;
 
-        public ItemController(ApplicationDbContext context)
+        public ItemController(IItemService itemService) => _itemService = itemService;
+
+        public async Task<IActionResult> Index(int page = 1, string search = "")
         {
-            _context = context;
+            const int pageSize = 10;
+            var all = (await _itemService.GetAllAsync()).OrderByDescending(x => x.ItemId).ToList();
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = search.ToLower();
+                all = all.Where(x =>
+                    (x.ItemName           ?? "").ToLower().Contains(s) ||
+                    (x.Category           ?? "").ToLower().Contains(s) ||
+                    (x.UnitOfMeasure      ?? "").ToLower().Contains(s) ||
+                    (x.StorageRequirement ?? "").ToLower().Contains(s)
+                ).ToList();
+            }
+            int totalPages = (int)Math.Ceiling(all.Count / (double)pageSize);
+            page = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages  = totalPages;
+            ViewBag.TotalCount  = all.Count;
+            ViewBag.PageSize    = pageSize;
+            ViewBag.Search      = search;
+            return View(all.Skip((page - 1) * pageSize).Take(pageSize).ToList());
         }
 
-        // GET: Item
-        public async Task<IActionResult> Index()
-        {
-            return View(await _context.Items.ToListAsync());
-        }
-
-        // GET: Item/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var item = await _context.Items
-                .FirstOrDefaultAsync(m => m.ItemId == id);
-            if (item == null)
-            {
-                return NotFound();
-            }
-
-            return View(item);
+            if (id == null) return NotFound();
+            var item = await _itemService.GetByIdAsync(id.Value);
+            return item == null ? NotFound() : View(item);
         }
 
-        // GET: Item/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
+        public IActionResult Create() => View();
 
-        // POST: Item/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ItemId,ItemName,Category,UnitOfMeasure,StorageRequirement")] Item item)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(item);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Item created successfully.";
-                return RedirectToAction(nameof(Index));
-            }
-            return View(item);
+            if (!ModelState.IsValid) return View(item);
+            await _itemService.CreateAsync(item);
+            TempData["SuccessMessage"] = "Item created successfully.";
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Item/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var item = await _context.Items.FindAsync(id);
-            if (item == null)
-            {
-                return NotFound();
-            }
-            return View(item);
+            if (id == null) return NotFound();
+            var item = await _itemService.GetByIdAsync(id.Value);
+            return item == null ? NotFound() : View(item);
         }
 
-        // POST: Item/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("ItemId,ItemName,Category,UnitOfMeasure,StorageRequirement")] Item item)
         {
-            if (id != item.ItemId)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(item);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ItemExists(item.ItemId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                TempData["SuccessUpdate"] = "Item updated successfully.";
-                return RedirectToAction(nameof(Index));
-            }
-            return View(item);
+            if (id != item.ItemId) return NotFound();
+            if (!ModelState.IsValid) return View(item);
+            if (!await _itemService.UpdateAsync(item)) return NotFound();
+            TempData["SuccessUpdate"] = "Item updated successfully.";
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Item/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var item = await _context.Items
-                .FirstOrDefaultAsync(m => m.ItemId == id);
-            if (item == null)
-            {
-                return NotFound();
-            }
-
-            return View(item);
+            if (id == null) return NotFound();
+            var item = await _itemService.GetByIdAsync(id.Value);
+            return item == null ? NotFound() : View(item);
         }
 
-        // POST: Item/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var item = await _context.Items
-                .Include(i => i.ConsumptionRecords)
-                .Include(i => i.Forecasts)
-                .Include(i => i.InventoryPositions)
-                .Include(i => i.ReplenishmentPlans)
-                .Include(i => i.TransferOrders)
-                .FirstOrDefaultAsync(i => i.ItemId == id);
-
-            if (item != null)
-            {
-                _context.ConsumptionRecords.RemoveRange(item.ConsumptionRecords);
-                _context.Forecasts.RemoveRange(item.Forecasts);
-                _context.InventoryPositions.RemoveRange(item.InventoryPositions);
-                _context.ReplenishmentPlans.RemoveRange(item.ReplenishmentPlans);
-                _context.TransferOrders.RemoveRange(item.TransferOrders);
-                _context.Items.Remove(item);
-            }
-
-            await _context.SaveChangesAsync();
+            await _itemService.DeleteAsync(id);
             TempData["SuccessDelete"] = "Item deleted successfully.";
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool ItemExists(int id)
-        {
-            return _context.Items.Any(e => e.ItemId == id);
         }
     }
 }

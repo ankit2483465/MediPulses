@@ -1,187 +1,115 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using MediPulses.BLL.Interfaces;
+using MediPulses.DAL.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using WebApplication1.Data;
-using WebApplication1.Models;
 
 namespace WebApplication1.Controllers
 {
     [Authorize(Roles = "Admin,Clinical Supply Manager,Biomedical Engineer / Device Manager,Procurement Officer")]
     public class TransferOrderController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ITransferOrderService _transferService;
 
-        public TransferOrderController(ApplicationDbContext context)
+        public TransferOrderController(ITransferOrderService transferService) => _transferService = transferService;
+
+        public async Task<IActionResult> Index(int page = 1, string search = "")
         {
-            _context = context;
+            const int pageSize = 10;
+            var all = (await _transferService.GetAllAsync()).OrderByDescending(x => x.TransferId).ToList();
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = search.ToLower();
+                all = all.Where(x =>
+                    (x.FromFacility?.Name ?? "").ToLower().Contains(s) ||
+                    (x.ToFacility?.Name   ?? "").ToLower().Contains(s) ||
+                    (x.Item?.ItemName     ?? "").ToLower().Contains(s) ||
+                    (x.Status             ?? "").ToLower().Contains(s)
+                ).ToList();
+            }
+            int totalPages = (int)Math.Ceiling(all.Count / (double)pageSize);
+            page = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages  = totalPages;
+            ViewBag.TotalCount  = all.Count;
+            ViewBag.PageSize    = pageSize;
+            ViewBag.Search      = search;
+            return View(all.Skip((page - 1) * pageSize).Take(pageSize).ToList());
         }
 
-        // GET: TransferOrder
-        public async Task<IActionResult> Index()
-        {
-            var transferOrders = await _context.TransferOrders
-                .Include(t => t.FromFacility)
-                .Include(t => t.ToFacility)
-                .Include(t => t.Item)
-                .ToListAsync();
-
-            return View(transferOrders);
-        }
-
-        // GET: TransferOrder/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var transferOrder = await _context.TransferOrders
-                .Include(t => t.FromFacility)
-                .Include(t => t.ToFacility)
-                .Include(t => t.Item)
-                .FirstOrDefaultAsync(m => m.TransferId == id);
-
-            if (transferOrder == null)
-            {
-                return NotFound();
-            }
-
-            return View(transferOrder);
+            if (id == null) return NotFound();
+            var order = await _transferService.GetByIdAsync(id.Value);
+            return order == null ? NotFound() : View(order);
         }
 
-        // GET: TransferOrder/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["FromFacilityId"] = new SelectList(_context.Facilities, "FacilityId", "Name");
-            ViewData["ToFacilityId"]   = new SelectList(_context.Facilities, "FacilityId", "Name");
-            ViewData["ItemId"]         = new SelectList(_context.Items, "ItemId", "ItemName");
+            ViewData["FromFacilityId"] = new SelectList(await _transferService.GetFacilitiesAsync(), "FacilityId", "Name");
+            ViewData["ToFacilityId"]   = new SelectList(await _transferService.GetFacilitiesAsync(), "FacilityId", "Name");
+            ViewData["ItemId"]         = new SelectList(await _transferService.GetItemsAsync(), "ItemId", "ItemName");
             return View();
         }
 
-        // POST: TransferOrder/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("TransferId,FromFacilityId,ToFacilityId,ItemId,Quantity,Status")] TransferOrder transferOrder)
+        public async Task<IActionResult> Create([Bind("TransferId,FromFacilityId,ToFacilityId,ItemId,Quantity,Status")] TransferOrder order)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(transferOrder);
-                await _context.SaveChangesAsync();
+                await _transferService.CreateAsync(order);
                 TempData["SuccessMessage"] = "Transfer order created successfully.";
                 return RedirectToAction(nameof(Index));
             }
-
-            ViewData["FromFacilityId"] = new SelectList(_context.Facilities, "FacilityId", "Name", transferOrder.FromFacilityId);
-            ViewData["ToFacilityId"]   = new SelectList(_context.Facilities, "FacilityId", "Name", transferOrder.ToFacilityId);
-            ViewData["ItemId"]         = new SelectList(_context.Items, "ItemId", "ItemName", transferOrder.ItemId);
-            return View(transferOrder);
+            ViewData["FromFacilityId"] = new SelectList(await _transferService.GetFacilitiesAsync(), "FacilityId", "Name", order.FromFacilityId);
+            ViewData["ToFacilityId"]   = new SelectList(await _transferService.GetFacilitiesAsync(), "FacilityId", "Name", order.ToFacilityId);
+            ViewData["ItemId"]         = new SelectList(await _transferService.GetItemsAsync(), "ItemId", "ItemName", order.ItemId);
+            return View(order);
         }
 
-        // GET: TransferOrder/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var transferOrder = await _context.TransferOrders.FindAsync(id);
-            if (transferOrder == null)
-            {
-                return NotFound();
-            }
-
-            ViewData["FromFacilityId"] = new SelectList(_context.Facilities, "FacilityId", "Name", transferOrder.FromFacilityId);
-            ViewData["ToFacilityId"]   = new SelectList(_context.Facilities, "FacilityId", "Name", transferOrder.ToFacilityId);
-            ViewData["ItemId"]         = new SelectList(_context.Items, "ItemId", "ItemName", transferOrder.ItemId);
-            return View(transferOrder);
+            if (id == null) return NotFound();
+            var order = await _transferService.GetByIdAsync(id.Value);
+            if (order == null) return NotFound();
+            ViewData["FromFacilityId"] = new SelectList(await _transferService.GetFacilitiesAsync(), "FacilityId", "Name", order.FromFacilityId);
+            ViewData["ToFacilityId"]   = new SelectList(await _transferService.GetFacilitiesAsync(), "FacilityId", "Name", order.ToFacilityId);
+            ViewData["ItemId"]         = new SelectList(await _transferService.GetItemsAsync(), "ItemId", "ItemName", order.ItemId);
+            return View(order);
         }
 
-        // POST: TransferOrder/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("TransferId,FromFacilityId,ToFacilityId,ItemId,Quantity,Status")] TransferOrder transferOrder)
+        public async Task<IActionResult> Edit(int id, [Bind("TransferId,FromFacilityId,ToFacilityId,ItemId,Quantity,Status")] TransferOrder order)
         {
-            if (id != transferOrder.TransferId)
-            {
-                return NotFound();
-            }
-
+            if (id != order.TransferId) return NotFound();
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(transferOrder);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!TransferOrderExists(transferOrder.TransferId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                if (!await _transferService.UpdateAsync(order)) return NotFound();
                 TempData["SuccessUpdate"] = "Transfer order updated successfully.";
                 return RedirectToAction(nameof(Index));
             }
-
-            ViewData["FromFacilityId"] = new SelectList(_context.Facilities, "FacilityId", "Name", transferOrder.FromFacilityId);
-            ViewData["ToFacilityId"]   = new SelectList(_context.Facilities, "FacilityId", "Name", transferOrder.ToFacilityId);
-            ViewData["ItemId"]         = new SelectList(_context.Items, "ItemId", "ItemName", transferOrder.ItemId);
-            return View(transferOrder);
+            ViewData["FromFacilityId"] = new SelectList(await _transferService.GetFacilitiesAsync(), "FacilityId", "Name", order.FromFacilityId);
+            ViewData["ToFacilityId"]   = new SelectList(await _transferService.GetFacilitiesAsync(), "FacilityId", "Name", order.ToFacilityId);
+            ViewData["ItemId"]         = new SelectList(await _transferService.GetItemsAsync(), "ItemId", "ItemName", order.ItemId);
+            return View(order);
         }
 
-        // GET: TransferOrder/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var transferOrder = await _context.TransferOrders
-                .Include(t => t.FromFacility)
-                .Include(t => t.ToFacility)
-                .Include(t => t.Item)
-                .FirstOrDefaultAsync(m => m.TransferId == id);
-
-            if (transferOrder == null)
-            {
-                return NotFound();
-            }
-
-            return View(transferOrder);
+            if (id == null) return NotFound();
+            var order = await _transferService.GetByIdAsync(id.Value);
+            return order == null ? NotFound() : View(order);
         }
 
-        // POST: TransferOrder/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var transferOrder = await _context.TransferOrders.FindAsync(id);
-            if (transferOrder != null)
-            {
-                _context.TransferOrders.Remove(transferOrder);
-            }
-
-            await _context.SaveChangesAsync();
+            await _transferService.DeleteAsync(id);
             TempData["SuccessDelete"] = "Transfer order deleted successfully.";
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool TransferOrderExists(int id)
-        {
-            return _context.TransferOrders.Any(e => e.TransferId == id);
         }
     }
 }

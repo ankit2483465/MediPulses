@@ -1,4 +1,4 @@
-@model IEnumerable<WebApplication1.Models.StorageZone>
+@model IEnumerable<MediPulses.DAL.Entities.StorageZone>
 
 @{
     ViewData["Title"] = "Storage Zones";
@@ -52,7 +52,7 @@
         <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
             <span class="fw-semibold text-secondary small">
                 <i class="bi bi-list-ul me-1"></i>All Storage Zones
-                <span class="badge bg-info text-dark ms-2">@Model.Count()</span>
+                <span class="badge bg-info text-dark ms-2">@((int)ViewBag.TotalCount)</span>
             </span>
             <input type="text" id="searchInput" class="search-box" placeholder="Search zones..." style="width:260px;">
         </div>
@@ -72,7 +72,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @{ int i = 1; }
+                        @{ int i = ((int)ViewBag.CurrentPage - 1) * (int)ViewBag.PageSize + 1; }
                         @foreach (var item in Model)
                         {
                             <tr>
@@ -134,6 +134,7 @@
                     </tbody>
                 </table>
             </div>
+            @await Html.PartialAsync("_Pagination")
         }
         else
         {

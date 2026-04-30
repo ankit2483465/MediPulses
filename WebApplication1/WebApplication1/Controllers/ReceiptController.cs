@@ -1,184 +1,121 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using MediPulses.BLL.Interfaces;
+using MediPulses.DAL.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using WebApplication1.Data;
-using WebApplication1.Models;
 
 namespace WebApplication1.Controllers
 {
     [Authorize(Roles = "Admin,Procurement Officer,Pharmacy Manager")]
     public class ReceiptController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IReceiptService _receiptService;
 
-        public ReceiptController(ApplicationDbContext context)
+        public ReceiptController(IReceiptService receiptService) => _receiptService = receiptService;
+
+        public async Task<IActionResult> Index(int page = 1, string search = "")
         {
-            _context = context;
+            const int pageSize = 10;
+            var all = (await _receiptService.GetAllAsync()).OrderByDescending(x => x.ReceiptId).ToList();
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = search.ToLower();
+                all = all.Where(x =>
+                    x.ReceiptId.ToString().Contains(s) ||
+                    (x.SupplierLot         ?? "").ToLower().Contains(s) ||
+                    (x.QualityStatus       ?? "").ToLower().Contains(s) ||
+                    (x.Po?.Supplier?.Name  ?? "").ToLower().Contains(s)
+                ).ToList();
+            }
+            int totalPages = (int)Math.Ceiling(all.Count / (double)pageSize);
+            page = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages  = totalPages;
+            ViewBag.TotalCount  = all.Count;
+            ViewBag.PageSize    = pageSize;
+            ViewBag.Search      = search;
+            return View(all.Skip((page - 1) * pageSize).Take(pageSize).ToList());
         }
 
-        // GET: Receipt
-        public async Task<IActionResult> Index()
-        {
-            var receipts = await _context.Receipts
-                .Include(r => r.Po)
-                    .ThenInclude(p => p!.Supplier)
-                .Include(r => r.ReceivedByNavigation)
-                .OrderByDescending(r => r.ReceivedDate)
-                .ToListAsync();
-            return View(receipts);
-        }
-
-        // GET: Receipt/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-                return NotFound();
-
-            var receipt = await _context.Receipts
-                .Include(r => r.Po)
-                    .ThenInclude(p => p!.Supplier)
-                .Include(r => r.ReceivedByNavigation)
-                .FirstOrDefaultAsync(r => r.ReceiptId == id);
-
-            if (receipt == null)
-                return NotFound();
-
-            return View(receipt);
+            if (id == null) return NotFound();
+            var receipt = await _receiptService.GetByIdAsync(id.Value);
+            return receipt == null ? NotFound() : View(receipt);
         }
 
-        // GET: Receipt/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            var poList = _context.PurchaseOrders
-                .Include(p => p.Supplier)
-                .ToList()
+            var poList = (await _receiptService.GetPurchaseOrdersAsync())
                 .Select(p => new SelectListItem
                 {
                     Value = p.Poid.ToString(),
                     Text = $"PO #{p.Poid} - {p.Supplier?.Name ?? "Unknown"}"
                 });
             ViewData["Poid"] = new SelectList(poList, "Value", "Text");
-            ViewData["ReceivedBy"] = new SelectList(_context.Users, "UserId", "Name");
+            ViewData["ReceivedBy"] = new SelectList(await _receiptService.GetUsersAsync(), "UserId", "Name");
             return View();
         }
 
-        // POST: Receipt/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ReceiptId,Poid,SupplierLot,ReceivedDate,ReceivedBy,QualityStatus")] Receipt receipt)
         {
             if (ModelState.IsValid)
             {
-                _context.Receipts.Add(receipt);
-                await _context.SaveChangesAsync();
+                await _receiptService.CreateAsync(receipt);
                 TempData["SuccessMessage"] = "Receipt created successfully.";
                 return RedirectToAction(nameof(Index));
             }
-
-            var poList = _context.PurchaseOrders
-                .Include(p => p.Supplier)
-                .ToList()
-                .Select(p => new SelectListItem
-                {
-                    Value = p.Poid.ToString(),
-                    Text = $"PO #{p.Poid} - {p.Supplier?.Name ?? "Unknown"}"
-                });
+            var poList = (await _receiptService.GetPurchaseOrdersAsync())
+                .Select(p => new SelectListItem { Value = p.Poid.ToString(), Text = $"PO #{p.Poid} - {p.Supplier?.Name ?? "Unknown"}" });
             ViewData["Poid"] = new SelectList(poList, "Value", "Text", receipt.Poid);
-            ViewData["ReceivedBy"] = new SelectList(_context.Users, "UserId", "Name", receipt.ReceivedBy);
+            ViewData["ReceivedBy"] = new SelectList(await _receiptService.GetUsersAsync(), "UserId", "Name", receipt.ReceivedBy);
             return View(receipt);
         }
 
-        // GET: Receipt/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-                return NotFound();
-
-            var receipt = await _context.Receipts.FindAsync(id);
-            if (receipt == null)
-                return NotFound();
-
-            var poList = _context.PurchaseOrders
-                .Include(p => p.Supplier)
-                .ToList()
-                .Select(p => new SelectListItem
-                {
-                    Value = p.Poid.ToString(),
-                    Text = $"PO #{p.Poid} - {p.Supplier?.Name ?? "Unknown"}"
-                });
+            if (id == null) return NotFound();
+            var receipt = await _receiptService.GetByIdAsync(id.Value);
+            if (receipt == null) return NotFound();
+            var poList = (await _receiptService.GetPurchaseOrdersAsync())
+                .Select(p => new SelectListItem { Value = p.Poid.ToString(), Text = $"PO #{p.Poid} - {p.Supplier?.Name ?? "Unknown"}" });
             ViewData["Poid"] = new SelectList(poList, "Value", "Text", receipt.Poid);
-            ViewData["ReceivedBy"] = new SelectList(_context.Users, "UserId", "Name", receipt.ReceivedBy);
+            ViewData["ReceivedBy"] = new SelectList(await _receiptService.GetUsersAsync(), "UserId", "Name", receipt.ReceivedBy);
             return View(receipt);
         }
 
-        // POST: Receipt/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("ReceiptId,Poid,SupplierLot,ReceivedDate,ReceivedBy,QualityStatus")] Receipt receipt)
         {
-            if (id != receipt.ReceiptId)
-                return NotFound();
-
+            if (id != receipt.ReceiptId) return NotFound();
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Receipts.Update(receipt);
-                    await _context.SaveChangesAsync();
-                    TempData["SuccessUpdate"] = "Receipt updated successfully.";
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!_context.Receipts.Any(e => e.ReceiptId == receipt.ReceiptId))
-                        return NotFound();
-                    throw;
-                }
+                if (!await _receiptService.UpdateAsync(receipt)) return NotFound();
+                TempData["SuccessUpdate"] = "Receipt updated successfully.";
+                return RedirectToAction(nameof(Index));
             }
-
-            var poList = _context.PurchaseOrders
-                .Include(p => p.Supplier)
-                .ToList()
-                .Select(p => new SelectListItem
-                {
-                    Value = p.Poid.ToString(),
-                    Text = $"PO #{p.Poid} - {p.Supplier?.Name ?? "Unknown"}"
-                });
+            var poList = (await _receiptService.GetPurchaseOrdersAsync())
+                .Select(p => new SelectListItem { Value = p.Poid.ToString(), Text = $"PO #{p.Poid} - {p.Supplier?.Name ?? "Unknown"}" });
             ViewData["Poid"] = new SelectList(poList, "Value", "Text", receipt.Poid);
-            ViewData["ReceivedBy"] = new SelectList(_context.Users, "UserId", "Name", receipt.ReceivedBy);
+            ViewData["ReceivedBy"] = new SelectList(await _receiptService.GetUsersAsync(), "UserId", "Name", receipt.ReceivedBy);
             return View(receipt);
         }
 
-        // GET: Receipt/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-                return NotFound();
-
-            var receipt = await _context.Receipts
-                .Include(r => r.Po)
-                    .ThenInclude(p => p!.Supplier)
-                .Include(r => r.ReceivedByNavigation)
-                .FirstOrDefaultAsync(r => r.ReceiptId == id);
-
-            if (receipt == null)
-                return NotFound();
-
-            return View(receipt);
+            if (id == null) return NotFound();
+            var receipt = await _receiptService.GetByIdAsync(id.Value);
+            return receipt == null ? NotFound() : View(receipt);
         }
 
-        // POST: Receipt/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var receipt = await _context.Receipts.FindAsync(id);
-            if (receipt != null)
-            {
-                _context.Receipts.Remove(receipt);
-                await _context.SaveChangesAsync();
-            }
+            await _receiptService.DeleteAsync(id);
             TempData["SuccessDelete"] = "Receipt deleted successfully.";
             return RedirectToAction(nameof(Index));
         }

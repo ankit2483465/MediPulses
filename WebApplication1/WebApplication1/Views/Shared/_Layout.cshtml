@@ -54,8 +54,8 @@
                         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="bi bi-list fs-4 text-white"></span>
                 </button>
-                <div class="navbar-collapse collapse d-lg-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <div class="navbar-collapse collapse">
+                    <ul class="navbar-nav me-auto flex-nowrap">
 
                         <!-- Dashboard -->
                         <li class="nav-item">
@@ -210,10 +210,20 @@
                             </li>
                         }
 
+                        <!-- Admin-only links -->
+                        @if (isAdmin)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-white-50 hover-link" asp-controller="AuditLog" asp-action="Index">
+                                    <i class="bi bi-shield-lock me-1"></i>Audit Logs
+                                </a>
+                            </li>
+                        }
+
                     </ul>
 
                     <!-- Right side: role badge + logout/login -->
-                    <ul class="navbar-nav align-items-center gap-2">
+                    <ul class="navbar-nav align-items-center gap-2 ms-auto flex-nowrap">
                         @if (!string.IsNullOrEmpty(userRole))
                         {
                             <li class="nav-item">
@@ -222,7 +232,7 @@
                                 </span>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link nav-login" asp-controller="Account" asp-action="Logout">
+                                <a class="nav-link nav-logout" asp-controller="Account" asp-action="Logout">
                                     <i class="bi bi-box-arrow-right me-1"></i>Logout
                                 </a>
                             </li>
@@ -256,5 +266,41 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var searchInput   = document.getElementById('searchInput');
+            var paginationBar = document.getElementById('paginationBar');
+            if (!searchInput) return;
+
+            // Restore the committed search term from the URL into the box
+            var serverSearch = new URLSearchParams(window.location.search).get('search') || '';
+            if (serverSearch) searchInput.value = serverSearch;
+
+            // While the user is typing a new term, hide pagination (it would be stale)
+            searchInput.addEventListener('input', function () {
+                if (paginationBar) paginationBar.style.display = 'none';
+            });
+
+            // Enter  → commit search to server (page resets to 1)
+            // Escape → clear search and reload
+            searchInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    applySearch(this.value.trim());
+                } else if (e.key === 'Escape') {
+                    this.value = '';
+                    applySearch('');
+                }
+            });
+
+            function applySearch(term) {
+                var url = new URL(window.location.href);
+                if (term) url.searchParams.set('search', term);
+                else      url.searchParams.delete('search');
+                url.searchParams.delete('page');
+                window.location.href = url.toString();
+            }
+        });
+    </script>
 </body>
 </html>

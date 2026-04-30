@@ -1,12 +1,12 @@
-@model IEnumerable<WebApplication1.Models.InventoryPosition>
+@model IEnumerable<MediPulses.DAL.Entities.InventoryPosition>
 
 @{
     ViewData["Title"] = "Inventory Positions";
-    var today = DateTime.Today;
-    var totalPositions  = Model.Count();
-    var lowStockCount   = Model.Count(x => x.QuantityOnHand.HasValue && x.SafetyStock.HasValue && x.QuantityOnHand <= x.SafetyStock);
-    var expiredCount    = Model.Count(x => x.ExpiryDate.HasValue && x.ExpiryDate.Value.Date < today);
-    var expiringSoon    = Model.Count(x => x.ExpiryDate.HasValue && x.ExpiryDate.Value.Date >= today && x.ExpiryDate.Value.Date <= today.AddDays(30));
+    var today           = DateTime.Today;
+    var totalPositions  = (int)ViewBag.TotalCount;
+    var lowStockCount   = (int)ViewBag.LowStockCount;
+    var expiredCount    = (int)ViewBag.ExpiredCount;
+    var expiringSoon    = (int)ViewBag.ExpiringSoon;
 }
 
 <div class="container-fluid py-4 px-4">
@@ -85,7 +85,7 @@
         <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
             <span class="fw-semibold text-secondary small">
                 <i class="bi bi-list-ul me-1"></i>All Inventory Positions
-                <span class="badge bg-success ms-2">@totalPositions</span>
+                <span class="badge bg-success ms-2">@((int)ViewBag.TotalCount)</span>
             </span>
             <input type="text" id="searchInput" class="search-box" placeholder="Search inventory..." style="width:260px;">
         </div>
@@ -108,7 +108,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @{ int i = 1; }
+                        @{ int i = ((int)ViewBag.CurrentPage - 1) * (int)ViewBag.PageSize + 1; }
                         @foreach (var inv in Model)
                         {
                             bool isExpired      = inv.ExpiryDate.HasValue && inv.ExpiryDate.Value.Date < today;
@@ -207,6 +207,7 @@
                     </tbody>
                 </table>
             </div>
+            @await Html.PartialAsync("_Pagination")
         }
         else
         {

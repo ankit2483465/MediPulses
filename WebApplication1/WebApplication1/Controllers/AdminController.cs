@@ -1,69 +1,72 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using MediPulses.BLL.Interfaces;
+using MediPulses.DAL.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using WebApplication1.Data;
-using WebApplication1.Models;
 
 namespace WebApplication1.Controllers
 {
     [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
-        private readonly ApplicationDbContext _db;
+        private readonly IAdminService _adminService;
 
-        private readonly List<string> _clinicalRoles = new List<string>
+        public AdminController(IAdminService adminService) => _adminService = adminService;
+
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 8, string search = "")
         {
-            "Clinical Supply Manager",
-            "Pharmacy Manager",
-            "Biomedical Engineer / Device Manager",
-            "Procurement Officer",
-            "Cold Chain Operator",
-            "Nursing / Ward Staff",
-            "Compliance Officer",
-            "Admin"
-        };
+            var all = (await _adminService.GetAllUsersAsync()).OrderByDescending(u => u.UserId).ToList();
 
-        public AdminController(ApplicationDbContext db) => _db = db;
+            // Full-list KPI stats (always based on entire user list)
+            ViewBag.AdminCount = all.Count(u => u.Role == "Admin");
+            ViewBag.RoleCount  = all.Where(u => !string.IsNullOrEmpty(u.Role))
+                                    .Select(u => u.Role).Distinct().Count();
+            ViewBag.Unassigned = all.Count(u => string.IsNullOrEmpty(u.Role) || u.Role == "User");
+            ViewBag.AllUsers   = all;
 
-        // 1. Dashboard Landing
-        public async Task<IActionResult> Index()
-        {
-            var users = await _db.Users.ToListAsync();
-            return View(users);
+            // Apply search filter
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = search.ToLower();
+                all = all.Where(u =>
+                    (u.Name  ?? "").ToLower().Contains(s) ||
+                    (u.Email ?? "").ToLower().Contains(s) ||
+                    (u.Role  ?? "").ToLower().Contains(s)
+                ).ToList();
+            }
+
+            // Pagination on filtered list
+            ViewBag.TotalCount  = all.Count;
+            int totalPages = (int)Math.Ceiling(all.Count / (double)pageSize);
+            page = Math.Max(1, Math.Min(page, Math.Max(1, totalPages)));
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages  = totalPages;
+            ViewBag.PageSize    = pageSize;
+            ViewBag.Search      = search;
+
+            return View(all.Skip((page - 1) * pageSize).Take(pageSize).ToList());
         }
 
-        // 2. GET: Edit User Role
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            // FindAsync() is the async version of Find()
-            var user = await _db.Users.FindAsync(id);
+            var user = await _adminService.GetUserByIdAsync(id);
             if (user == null) return NotFound();
 
-            ViewBag.Roles = _clinicalRoles;
+            ViewBag.Roles = _adminService.ClinicalRoles;
             return View(user);
         }
 
-        // 3. POST: Update User Role
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(User model)
         {
-            var userInDb = await _db.Users.FindAsync(model.UserId);
-            if (userInDb != null)
-            {
-                userInDb.Role = model.Role;
-                // SaveChangesAsync() pushes the update to the DB
-                await _db.SaveChangesAsync();
-                TempData["Success"] = $"Role updated to '{model.Role}' for {userInDb.Name}.";
-                return RedirectToAction(nameof(Index));
-            }
+            var updated = await _adminService.UpdateUserRoleAsync(model.UserId, model.Role);
+            if (updated)
+                TempData["Success"] = $"Role updated to '{model.Role}'.";
             return RedirectToAction(nameof(Index));
         }
 
-        // 4. POST: Delete User
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
             var currentUserId = HttpContext.Session.GetInt32("UserId");
@@ -73,29 +76,25 @@ namespace WebApplication1.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // FirstOrDefaultAsync() fetches the user and their related data asynchronously
-            var user = await _db.Users
-                .Include(u => u.AuditLogs)
-                .Include(u => u.ConsumptionRecords)
-                .Include(u => u.Notifications)
-                .Include(u => u.RecallActions)
-                .Include(u => u.Receipts)
-                .FirstOrDefaultAsync(u => u.UserId == id);
+            var user = await _adminService.GetUserByIdAsync(id);
+            if (user == null) return NotFound();
+            return View(user);
+        }
 
-            if (user != null)
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var currentUserId = HttpContext.Session.GetInt32("UserId");
+            if (currentUserId.HasValue && id == currentUserId.Value)
             {
-                // RemoveRange is still synchronous because it only marks items for deletion in memory
-                _db.AuditLogs.RemoveRange(user.AuditLogs);
-                _db.ConsumptionRecords.RemoveRange(user.ConsumptionRecords);
-                _db.Notifications.RemoveRange(user.Notifications);
-                _db.RecallActions.RemoveRange(user.RecallActions);
-                _db.Receipts.RemoveRange(user.Receipts);
-                _db.Users.Remove(user);
-
-                // This is where the actual DB execution happens
-                await _db.SaveChangesAsync();
-                TempData["Success"] = $"{user.Name} has been deleted successfully.";
+                TempData["Error"] = "You cannot delete your own account.";
+                return RedirectToAction(nameof(Index));
             }
+
+            var deleted = await _adminService.DeleteUserAsync(id);
+            if (deleted)
+                TempData["Success"] = "User has been deleted successfully.";
             return RedirectToAction(nameof(Index));
         }
     }

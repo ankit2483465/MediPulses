@@ -1,0 +1,71 @@
+@model MediPulses.DAL.Entities.AuditLog
+
+@{
+    ViewData["Title"] = "Delete Audit Log";
+}
+
+<div class="container-fluid py-4 px-4">
+
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <div>
+            <h2 class="mb-1"><i class="bi bi-trash-fill me-2 text-danger"></i>Delete Audit Log</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Audit Logs</a></li>
+                    <li class="breadcrumb-item active">Delete</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="data-card border-danger border-opacity-25">
+                <div class="card-header fw-semibold text-danger small">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>Confirm Deletion
+                </div>
+                <div class="p-4">
+                    <div class="alert alert-danger rounded-3 mb-4">
+                        <i class="bi bi-exclamation-circle-fill me-2"></i>
+                        This action is <strong>permanent</strong> and cannot be undone.
+                    </div>
+
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted">Audit ID</dt>
+                        <dd class="col-sm-8">@Model.AuditId</dd>
+
+                        <dt class="col-sm-4 text-muted">User</dt>
+                        <dd class="col-sm-8">
+                            <i class="bi bi-person me-1 text-danger"></i>
+                            @(Model.User?.Name ?? "—")
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Action</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-secondary">@Model.Action</span>
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Timestamp</dt>
+                        <dd class="col-sm-8">
+                            <i class="bi bi-clock me-1 text-muted"></i>
+                            @(Model.Timestamp.HasValue ? Model.Timestamp.Value.ToString("dd MMM yyyy, HH:mm:ss") : "—")
+                        </dd>
+                    </dl>
+                </div>
+                <div class="card-footer d-flex gap-2">
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="AuditId" />
+                        <button type="submit" class="btn btn-danger fw-semibold px-4">
+                            <i class="bi bi-trash-fill me-1"></i>Delete
+                        </button>
+                    </form>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Cancel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
